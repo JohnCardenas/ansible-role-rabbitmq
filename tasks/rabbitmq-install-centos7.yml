@@ -1,0 +1,32 @@
+---
+- name: Install epel-release repo
+  yum:
+    name: epel-release
+    state: present
+
+- name: Add rabbitmq-erlang Repository
+  yum_repository:
+    name: rabbitmq_erlang
+    baseurl: https://packagecloud.io/rabbitmq/erlang/el/7/$basearch
+    gpgkey: https://packagecloud.io/rabbitmq/erlang/gpgkey
+    gpgcheck: true
+    repo_gpgcheck: true
+    sslverify: true
+
+- name: Add rabbitmq-server Repository
+  yum_repository:
+    name: rabbitmq_rabbitmq-server
+    baseurl: https://packagecloud.io/rabbitmq/rabbitmq-server/el/7/$basearch
+    gpgkey: https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey
+    gpgcheck: true
+    repo_gpgcheck: true
+    sslverify: true
+
+- name: Install Required Packages
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - erlang
+    - rabbitmq-server
