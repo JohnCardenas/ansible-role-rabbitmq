@@ -5,3 +5,8 @@
   tags:
     - rabbitmq
     - rabbitmq:install
+
+- include_tasks: rabbitmq-configure.yml
+  tags:
+    - rabbitmq
+    - rabbitmq:configure
