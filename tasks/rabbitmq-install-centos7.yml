@@ -7,6 +7,7 @@
 - name: Add rabbitmq-erlang Repository
   yum_repository:
     name: rabbitmq_erlang
+    description: rabbitmq_erlang
     baseurl: https://packagecloud.io/rabbitmq/erlang/el/7/$basearch
     gpgkey: https://packagecloud.io/rabbitmq/erlang/gpgkey
     gpgcheck: true
@@ -16,6 +17,7 @@
 - name: Add rabbitmq-server Repository
   yum_repository:
     name: rabbitmq_rabbitmq-server
+    description: rabbitmq_rabbitmq-server
     baseurl: https://packagecloud.io/rabbitmq/rabbitmq-server/el/7/$basearch
     gpgkey: https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey
     gpgcheck: true
