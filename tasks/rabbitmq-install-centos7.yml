@@ -10,7 +10,7 @@
     description: rabbitmq_erlang
     baseurl: https://packagecloud.io/rabbitmq/erlang/el/7/$basearch
     gpgkey: https://packagecloud.io/rabbitmq/erlang/gpgkey
-    gpgcheck: true
+    gpgcheck: false
     repo_gpgcheck: true
     sslverify: true
 
@@ -20,7 +20,7 @@
     description: rabbitmq_rabbitmq-server
     baseurl: https://packagecloud.io/rabbitmq/rabbitmq-server/el/7/$basearch
     gpgkey: https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey
-    gpgcheck: true
+    gpgcheck: false
     repo_gpgcheck: true
     sslverify: true
 
