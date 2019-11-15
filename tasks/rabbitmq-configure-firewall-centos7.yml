@@ -12,8 +12,7 @@
 - name: Open Management Port
   when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.allow_management_cidrs is not undefined"
   firewalld:
-    source: "{{ item }}"
-    port: 15672/tcp
+    rich_rule: "rule family=ipv4 source address={{item}} port port=15672 protocol=tcp accept"
     state: enabled
     permanent: yes
     immediate: yes
@@ -24,16 +23,14 @@
   block:
     - name: Open MQTT Port
       firewalld:
-        source: "{{ item }}"
-        port: 1883/tcp
+        rich_rule: "rule family=ipv4 source address={{item}} port port=1883 protocol=tcp accept"
         state: enabled
         permanent: yes
         immediate: yes
       loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
     - name: Open MQTT SSL Port
       firewalld:
-        source: "{{ item }}"
-        port: 8883/tcp
+        rich_rule: "rule family=ipv4 source address={{item}} port port=8883 protocol=tcp accept"
         state: enabled
         permanent: yes
         immediate: yes
