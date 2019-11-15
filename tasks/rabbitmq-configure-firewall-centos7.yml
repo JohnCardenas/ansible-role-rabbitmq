@@ -8,8 +8,6 @@
     - 1883/tcp
     - 8883/tcp
     - 15672/tcp
-  notify:
-    - reload firewalld
 
 - name: Open Management Port
   when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.allow_management_cidrs is not undefined"
