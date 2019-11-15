@@ -6,7 +6,7 @@
   changed_when: delete_management_zone.rc == 0
 
 - name: Configure Firewall for Management
-  when: rabbitmq_management in rabbitmq.plugins
+  when: "'rabbitmq_management' in rabbitmq.plugins"
   block:
     - name: Create Management Zone
       command: firewall-cmd --permanent --new-zone rabbitmq_mgmt
