@@ -18,5 +18,4 @@
         permanent: yes
         immediate: yes
         zone: rabbitmq_mgmt
-      loop:
-        - "{{ rabbitmq.allow_management_cidrs }}"
+      loop: "{{ rabbitmq.allow_management_cidrs | flatten(levels=1) }}"

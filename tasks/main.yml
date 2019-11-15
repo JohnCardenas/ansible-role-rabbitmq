@@ -1,17 +1,17 @@
 ---
 # tasks file for rabbitmq
-- include_tasks: rabbitmq-install-centos7.yml
+- import_tasks: rabbitmq-install-centos7.yml
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
   tags:
     - rabbitmq
     - rabbitmq:install
 
-- include_tasks: rabbitmq-configure-plugins.yml
+- import_tasks: rabbitmq-configure-plugins.yml
   tags:
     - rabbitmq
     - rabbitmq:configure
 
-- include_tasks: rabbitmq-configure-firewall-centos7.yml
+- import_tasks: rabbitmq-configure-firewall-centos7.yml
   when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
   tags:
     - rabbitmq
