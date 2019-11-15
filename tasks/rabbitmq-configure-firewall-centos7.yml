@@ -1,14 +1,4 @@
 ---
-- name: Reset Ports
-  firewalld:
-    port: "{{ item }}"
-    state: disabled
-    permanent: yes
-  loop:
-    - 1883/tcp
-    - 8883/tcp
-    - 15672/tcp
-
 - name: Open Management Port
   when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.allow_management_cidrs is not undefined"
   firewalld:
@@ -35,27 +25,3 @@
         permanent: yes
         immediate: yes
       loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
-
-# - name: Close Management Port
-#   when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.allow_management_cidrs is undefined"
-#   firewalld:
-#     port: 15672/tcp
-#     state: disabled
-#     permanent: yes
-#     immediate: yes
-  
-# - name: Close MQTT Ports
-#   when: "'rabbitmq_mqtt' not in rabbitmq.plugins or rabbitmq.allow_mqtt_cidrs is undefined"
-#   block:
-#     - name: Close MQTT Port
-#       firewalld:
-#         port: 1883/tcp
-#         state: disabled
-#         permanent: yes
-#         immediate: yes
-#     - name: Close MQTT SSL Port
-#       firewalld:
-#         port: 8883/tcp
-#         state: disabled
-#         permanent: yes
-#         immediate: yes
