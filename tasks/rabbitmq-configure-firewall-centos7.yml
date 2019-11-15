@@ -1,21 +1,10 @@
 ---
-- name: Delete Management Firewall Configuration
-  when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.allow_management_cidrs is undefined"
-  block:
-    - name: Delete Management Firewall Zone
-      command: firewall-cmd --permanent --delete-zone rabbitmq_mgmt
-      register: delete_management_zone
-      failed_when: delete_management_zone.rc != 0 and delete_management_zone.rc != 112
-      changed_when: delete_management_zone.rc == 0
-    - name: Reload Zones
-      command: firewall-cmd --reload
-
 - name: Create Management Firewall Configuration
   when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.allow_management_cidrs is not undefined"
   block:
     - name: Create Management Zone
       command: firewall-cmd --permanent --new-zone rabbitmq_mgmt
-    - name: Reload Zones
+    - name: Reload Firewall Zones
       command: firewall-cmd --reload
     - name: Enable Management Port
       firewalld:
@@ -26,3 +15,47 @@
         immediate: yes
         zone: rabbitmq_mgmt
       loop: "{{ rabbitmq.allow_management_cidrs | flatten(levels=1) }}"
+
+- name: Create MQTT Firewall Configuration
+  when: "'rabbitmq_mqtt' in rabbitmq.plugins and rabbitmq.allow_mqtt_cidrs is not undefined"
+  block:
+    - name: Create MQTT Zone
+      command: firewall-cmd --permanent --new-zone rabbitmq_mqtt
+    - name: Reload Firewall Zones
+      command: firewall-cmd --reload
+    - name: Enable MQTT Port
+      firewalld:
+        source: "{{ item }}"
+        port: 1883/tcp
+        state: enabled
+        permanent: yes
+        immediate: yes
+        zone: rabbitmq_mqtt
+      loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
+    - name: Enable MQTT SSL Port
+      firewalld:
+        source: "{{ item }}"
+        port: 8883/tcp
+        state: enabled
+        permanent: yes
+        immediate: yes
+        zone: rabbitmq_mqtt
+      loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
+
+- name: Delete Management Firewall Zone
+  when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.allow_management_cidrs is undefined"
+  command: firewall-cmd --permanent --delete-zone rabbitmq_mgmt
+  register: delete_management_zone
+  failed_when: delete_management_zone.rc != 0 and delete_management_zone.rc != 112
+  changed_when: delete_management_zone.rc == 0
+  notify:
+    - reload firewalld
+
+- name: Delete MQTT Firewall Zone
+  when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.allow_management_cidrs is undefined"
+  command: firewall-cmd --permanent --delete-zone rabbitmq_mqtt
+  register: delete_management_zone
+  failed_when: delete_management_zone.rc != 0 and delete_management_zone.rc != 112
+  changed_when: delete_management_zone.rc == 0
+  notify:
+    - reload firewalld
