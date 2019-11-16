@@ -35,30 +35,28 @@
 {% for item in rabbitmq.config.listeners.tcp|default([]) -%}
   listeners.tcp.{{loop.index}} = {{item}}:5672
 {% endfor %}
-
-{% for item in rabbitmq.config.listeners.ssl|default([]) %}
+{% for item in rabbitmq.config.listeners.ssl|default([]) -%}
   listeners.ssl.{{loop.index}} = {{item}}:5671
 {% endfor %}
-
 
 ## Number of Erlang processes that will accept connections for the TCP
 ## and TLS listeners.
 ##
 # num_acceptors.tcp = 10
-{% if rabbitmq.config.num_acceptors.tcp is defined %}
-num_acceptors.tcp = {{ rabbitmq.config.num_acceptors.tcp|default(10) }}
+{% if rabbitmq.config.num_acceptors.tcp is defined -%}
+  num_acceptors.tcp = {{ rabbitmq.config.num_acceptors.tcp|default(10) }}
 {% endif %}
 # num_acceptors.ssl = 10
-{% if rabbitmq.config.num_acceptors.ssl is defined %}
-num_acceptors.ssl = {{ rabbitmq.config.num_acceptors.ssl|default(10) }}
+{% if rabbitmq.config.num_acceptors.ssl is defined -%}
+  num_acceptors.ssl = {{ rabbitmq.config.num_acceptors.ssl|default(10) }}
 {% endif %}
 
 ## Maximum amount of time allowed for the AMQP 0-9-1 and AMQP 1.0 handshake
 ## (performed after socket connection and TLS handshake) to complete, in milliseconds.
 ##
 # handshake_timeout = 10000
-{% if rabbitmq.config.handshake_timeout is defined %}
-handshake_timeout = {{ rabbitmq.config.handshake_timeout|default(10000) }}
+{% if rabbitmq.config.handshake_timeout is defined -%}
+  handshake_timeout = {{ rabbitmq.config.handshake_timeout|default(10000) }}
 {% endif %}
 
 ## Set to 'true' to perform reverse DNS lookups when accepting a
@@ -66,7 +64,206 @@ handshake_timeout = {{ rabbitmq.config.handshake_timeout|default(10000) }}
 ## instead of IP addresses. Default value is `false`.
 ##
 # reverse_dns_lookups = false
-{% if rabbitmq.config.reverse_dns_lookups is defined %}
-reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default('false') }}
+{% if rabbitmq.config.reverse_dns_lookups is defined -%}
+  reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default('false') }}
 {% endif %}
 
+
+
+##
+## Security, Access Control
+## ==============
+##
+
+## Related doc guide: https://rabbitmq.com/access-control.html.
+
+## The default "guest" user is only permitted to access the server
+## via a loopback interface (e.g. localhost).
+## {loopback_users, [<<"guest">>]},
+##
+# loopback_users.guest = true
+
+## Uncomment the following line if you want to allow access to the
+## guest user from anywhere on the network.
+# loopback_users.guest = false
+
+{% for user in rabbitmq.config.loopback_users|default([]) -%}
+  {%- for key, value in user.items() -%}
+    loopback_users.{{key}} = {{value}}
+  {% endfor -%}
+{%- endfor %}
+
+## TLS configuration.
+##
+## Related doc guide: https://rabbitmq.com/ssl.html.
+##
+# ssl_options.verify               = verify_peer
+# ssl_options.fail_if_no_peer_cert = false
+# ssl_options.cacertfile           = /path/to/cacert.pem
+# ssl_options.certfile             = /path/to/cert.pem
+# ssl_options.keyfile              = /path/to/key.pem
+#
+# ssl_options.honor_cipher_order   = true
+# ssl_options.honor_ecc_order      = true
+
+# ssl_options.ciphers.1  = ECDHE-ECDSA-AES256-GCM-SHA384
+# ssl_options.ciphers.2  = ECDHE-RSA-AES256-GCM-SHA384
+# ssl_options.ciphers.3  = ECDHE-ECDSA-AES256-SHA384
+# ssl_options.ciphers.4  = ECDHE-RSA-AES256-SHA384
+# ssl_options.ciphers.5  = ECDH-ECDSA-AES256-GCM-SHA384
+# ssl_options.ciphers.6  = ECDH-RSA-AES256-GCM-SHA384
+# ssl_options.ciphers.7  = ECDH-ECDSA-AES256-SHA384
+# ssl_options.ciphers.8  = ECDH-RSA-AES256-SHA384
+# ssl_options.ciphers.9  = DHE-RSA-AES256-GCM-SHA384
+# ssl_options.ciphers.10 = DHE-DSS-AES256-GCM-SHA384
+# ssl_options.ciphers.11 = DHE-RSA-AES256-SHA256
+# ssl_options.ciphers.12 = DHE-DSS-AES256-SHA256
+# ssl_options.ciphers.13 = ECDHE-ECDSA-AES128-GCM-SHA256
+# ssl_options.ciphers.14 = ECDHE-RSA-AES128-GCM-SHA256
+# ssl_options.ciphers.15 = ECDHE-ECDSA-AES128-SHA256
+# ssl_options.ciphers.16 = ECDHE-RSA-AES128-SHA256
+# ssl_options.ciphers.17 = ECDH-ECDSA-AES128-GCM-SHA256
+# ssl_options.ciphers.18 = ECDH-RSA-AES128-GCM-SHA256
+# ssl_options.ciphers.19 = ECDH-ECDSA-AES128-SHA256
+# ssl_options.ciphers.20 = ECDH-RSA-AES128-SHA256
+# ssl_options.ciphers.21 = DHE-RSA-AES128-GCM-SHA256
+# ssl_options.ciphers.22 = DHE-DSS-AES128-GCM-SHA256
+# ssl_options.ciphers.23 = DHE-RSA-AES128-SHA256
+# ssl_options.ciphers.24 = DHE-DSS-AES128-SHA256
+# ssl_options.ciphers.25 = ECDHE-ECDSA-AES256-SHA
+# ssl_options.ciphers.26 = ECDHE-RSA-AES256-SHA
+# ssl_options.ciphers.27 = DHE-RSA-AES256-SHA
+# ssl_options.ciphers.28 = DHE-DSS-AES256-SHA
+# ssl_options.ciphers.29 = ECDH-ECDSA-AES256-SHA
+# ssl_options.ciphers.30 = ECDH-RSA-AES256-SHA
+# ssl_options.ciphers.31 = ECDHE-ECDSA-AES128-SHA
+# ssl_options.ciphers.32 = ECDHE-RSA-AES128-SHA
+# ssl_options.ciphers.33 = DHE-RSA-AES128-SHA
+# ssl_options.ciphers.34 = DHE-DSS-AES128-SHA
+# ssl_options.ciphers.35 = ECDH-ECDSA-AES128-SHA
+# ssl_options.ciphers.36 = ECDH-RSA-AES128-SHA
+
+{% if rabbitmq.config.ssl_options.verify is defined -%}
+  ssl_options.verify               = {{ rabbitmq.config.ssl_options.verify|default('verify_peer') }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.fail_if_no_peer_cert is defined -%}
+  ssl_options.fail_if_no_peer_cert = {{ rabbitmq.config.ssl_options.fail_if_no_peer_cert|default('false') }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.cacertfile is defined -%}
+  ssl_options.cacertfile           = {{ rabbitmq.config.ssl_options.cacertfile|default('/etc/ssl/certs/ca-bundle.crt') }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.certfile is defined -%}
+  ssl_options.certfile             = {{ rabbitmq.config.ssl_options.certfile }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.keyfile is defined -%}
+  ssl_options.keyfile              = {{ rabbitmq.config.ssl_options.keyfile }}
+{% endif %}
+
+{% if rabbitmq.config.ssl_options.honor_cipher_order is defined -%}
+  ssl_options.honor_cipher_order = {{ rabbitmq.config.ssl_options.honor_cipher_order|default('true') }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.honor_ecc_order is defined -%}
+  ssl_options.honor_ecc_order    = {{ rabbitmq.config.ssl_options.honor_ecc_order|default('true') }}
+{% endif %}
+
+{% for item in rabbitmq.config.ssl_options.ciphers|default([]) -%}
+  ssl_options.ciphers.{{loop.index}}  = {{item}}
+{% endfor %}
+
+
+## Select an authentication/authorisation backend to use.
+##
+## Alternative backends are provided by plugins, such as rabbitmq-auth-backend-ldap.
+##
+## NB: These settings require certain plugins to be enabled.
+##
+## Related doc guides:
+##
+##  * https://rabbitmq.com/plugins.html
+##  * https://rabbitmq.com/access-control.html
+##
+
+# auth_backends.1   = rabbit_auth_backend_internal
+
+## uses separate backends for authentication and authorisation,
+## see below.
+# auth_backends.1.authn = rabbit_auth_backend_ldap
+# auth_backends.1.authz = rabbit_auth_backend_internal
+
+## The rabbitmq_auth_backend_ldap plugin allows the broker to
+## perform authentication and authorisation by deferring to an
+## external LDAP server.
+##
+## Relevant doc guides:
+##
+## * https://rabbitmq.com/ldap.html
+## * https://rabbitmq.com/access-control.html
+##
+## uses LDAP for both authentication and authorisation
+# auth_backends.1 = rabbit_auth_backend_ldap
+
+## uses HTTP service for both authentication and
+## authorisation
+# auth_backends.1 = rabbit_auth_backend_http
+
+## uses two backends in a chain: HTTP first, then internal
+# auth_backends.1   = rabbit_auth_backend_http
+# auth_backends.2   = rabbit_auth_backend_internal
+
+{% for item in rabbitmq.config.auth_backends|default([]) -%}
+  auth_backends.{{loop.count}}.authn = {{item.authn}}
+  auth_backends.{{loop.count}}.authz = {{item.authz}}
+{% endfor %}
+
+
+## Authentication
+## The built-in mechanisms are 'PLAIN',
+## 'AMQPLAIN', and 'EXTERNAL' Additional mechanisms can be added via
+## plugins.
+##
+## Related doc guide: https://rabbitmq.com/authentication.html.
+##
+# auth_mechanisms.1 = PLAIN
+# auth_mechanisms.2 = AMQPLAIN
+
+## The rabbitmq-auth-mechanism-ssl plugin makes it possible to
+## authenticate a user based on the client's x509 (TLS) certificate.
+## Related doc guide: https://rabbitmq.com/authentication.html.
+##
+## To use auth-mechanism-ssl, the EXTERNAL mechanism should
+## be enabled:
+##
+# auth_mechanisms.1 = PLAIN
+# auth_mechanisms.2 = AMQPLAIN
+# auth_mechanisms.3 = EXTERNAL
+
+## To force x509 certificate-based authentication on all clients,
+## exclude all other mechanisms (note: this will disable password-based
+## authentication even for the management UI!):
+##
+# auth_mechanisms.1 = EXTERNAL
+
+{% for item in rabbitmq.config.auth_mechanisms|default([]) -%}
+  auth_mechanisms.{{loop.count}} = {{item}}
+{% endfor %}
+
+
+## This pertains to both the rabbitmq-auth-mechanism-ssl plugin and
+## STOMP ssl_cert_login configurations. See the RabbitMQ STOMP plugin
+## configuration section later in this file and the README in
+## https://github.com/rabbitmq/rabbitmq-auth-mechanism-ssl for further
+## details.
+##
+## To use the TLS cert's CN instead of its DN as the username
+##
+# ssl_cert_login_from   = common_name
+{% if rabbitmq.config.ssl_cert_login_from is defined -%}
+  ssl_cert_login_from = {{ rabbitmq.config.ssl_cert_login_from|default('common_name') }}
+{% endif %}
+
+## TLS handshake timeout, in milliseconds.
+##
+# ssl_handshake_timeout = 5000
+{% if rabbitmq.config.ssl_handshake_timeout is defined -%}
+  ssl_handshake_timeout = {{ rabbitmq.config.ssl_handshake_timeout|default(5000) }}
+{% endif %}
