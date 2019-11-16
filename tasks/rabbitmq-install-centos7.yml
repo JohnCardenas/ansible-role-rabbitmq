@@ -32,3 +32,9 @@
   loop:
     - erlang
     - rabbitmq-server
+
+- name: Enable rabbitmq-server
+  service:
+    name: rabbitmq-server
+    state: started
+    enabled: true
