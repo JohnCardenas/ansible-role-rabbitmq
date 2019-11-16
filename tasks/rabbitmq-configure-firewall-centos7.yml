@@ -1,4 +1,22 @@
 ---
+- name: Open AMQP Ports
+  when: rabbitmq.allow_amqp_cidrs is not undefined
+  block:
+  - name: Open AMQP SSL Port
+    firewalld:
+      rich_rule: "rule family=ipv4 source address={{item}} port port=5672 protocol=tcp accept"
+      state: enabled
+      permanent: yes
+      immediate: yes
+    loop: "{{ rabbitmq.allow_amqp_cidrs | flatten(levels=1) }}"
+  - name: Open AMQP Port
+    firewalld:
+      rich_rule: "rule family=ipv4 source address={{item}} port port=5672 protocol=tcp accept"
+      state: enabled
+      permanent: yes
+      immediate: yes
+    loop: "{{ rabbitmq.allow_amqp_cidrs | flatten(levels=1) }}"
+
 - name: Open Management Port
   when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.allow_management_cidrs is not undefined"
   firewalld:

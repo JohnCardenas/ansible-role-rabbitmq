@@ -6,6 +6,11 @@
     - rabbitmq
     - rabbitmq:install
 
+- import_tasks: rabbitmq-configure-main.yml
+  tags:
+    - rabbitmq
+    - rabbitmq:configure
+
 - import_tasks: rabbitmq-configure-plugins.yml
   tags:
     - rabbitmq

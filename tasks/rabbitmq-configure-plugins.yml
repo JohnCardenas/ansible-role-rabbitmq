@@ -6,3 +6,5 @@
     new_only: yes
     state: enabled
   loop: "{{ rabbitmq.plugins | flatten(levels=1) }}"
+  notify:
+    - restart rabbitmq-server
