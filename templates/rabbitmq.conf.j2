@@ -210,9 +210,9 @@
 # auth_backends.1   = rabbit_auth_backend_http
 # auth_backends.2   = rabbit_auth_backend_internal
 
-{% for item in rabbitmq.config.auth_backends|default([]) -%}
-  auth_backends.{{loop.count}}.authn = {{item.authn}}
-  auth_backends.{{loop.count}}.authz = {{item.authz}}
+{% for item in rabbitmq.config.auth_backends|default([]) %}
+auth_backends.{{loop.count}}.authn = {{item.authn}}
+auth_backends.{{loop.count}}.authz = {{item.authz}}
 {% endfor %}
 
 
@@ -267,3 +267,80 @@
 {% if rabbitmq.config.ssl_handshake_timeout is defined -%}
   ssl_handshake_timeout = {{ rabbitmq.config.ssl_handshake_timeout|default(5000) }}
 {% endif %}
+
+
+## Cluster name
+##
+# cluster_name = dev3.eng.megacorp.local
+{% if rabbitmq.config.cluster_name is defined -%}
+  cluster_name = {{rabbitmq.config.cluster_name}}
+{% endif %}
+
+## Password hashing implementation. Will only affect newly
+## created users. To recalculate hash for an existing user
+## it's necessary to update her password.
+##
+## To use SHA-512, set to rabbit_password_hashing_sha512.
+##
+# password_hashing_module = rabbit_password_hashing_sha256
+
+## When importing definitions exported from versions earlier
+## than 3.6.0, it is possible to go back to MD5 (only do this
+## as a temporary measure!) by setting this to rabbit_password_hashing_md5.
+##
+# password_hashing_module = rabbit_password_hashing_md5
+
+{% if rabbitmq.config.password_hashing_module is defined -%}
+  password_hashing_module = {{rabbitmq.config.password_hashing_module}}
+{% endif %}
+
+
+##
+## Default User / VHost
+## ====================
+##
+
+## On first start RabbitMQ will create a vhost and a user. These
+## config items control what gets created.
+## Relevant doc guide: https://rabbitmq.com/access-control.html
+##
+# default_vhost = /
+# default_user = guest
+# default_pass = guest
+
+# default_permissions.configure = .*
+# default_permissions.read = .*
+# default_permissions.write = .*
+
+## Tags for default user
+##
+## For more details about tags, see the documentation for the
+## Management Plugin at https://rabbitmq.com/management.html.
+##
+# default_user_tags.administrator = true
+
+## Define other tags like this:
+# default_user_tags.management = true
+# default_user_tags.custom_tag = true
+
+{% if rabbitmq.config.default_vhost is defined -%}
+  default_vhost = {{ rabbitmq.config.default_vhost|default('/') }}
+{% endif %}
+{% if rabbitmq.config.default_user is defined -%}
+  default_user = {{ rabbitmq.config.default_user|default('guest') }}
+{% endif %}
+{% if rabbitmq.config.default_pass is defined -%}
+  default_pass = {{ rabbitmq.config.default_pass|default('guest') }}
+{% endif %}
+
+{% if rabbitmq.config.default_permissions is defined %}
+default_permissions.configure = {{ rabbitmq.config.default_permissions.configure|default('.*') }}
+default_permissions.read      = {{ rabbitmq.config.default_permissions.read|default('.*') }}
+default_permissions.write     = {{ rabbitmq.config.default_permissions.write|default('.*') }}
+{% endif %}
+
+{% for dict in rabbitmq.config.default_user_tags|default([]) -%}
+  {%- for key, value in dict.items() -%}
+    default_user_tags.{{key}} = {{value}}
+  {% endfor -%}
+{%- endfor %}
