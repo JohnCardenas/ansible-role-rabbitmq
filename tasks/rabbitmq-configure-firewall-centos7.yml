@@ -59,7 +59,7 @@
   when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.config.ssl is not defined"
   firewalld:
     port: 15671/tcp
-    state: enabled
+    state: disabled
     permanent: true
     immediate: true
 
