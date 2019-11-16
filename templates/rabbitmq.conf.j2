@@ -15,12 +15,6 @@
 ##
 # listeners.tcp.default = 5672
 
-{% if rabbitmq.config.amqp_listeners is defined %}
-{% for item in rabbitmq.config.amqp_listeners %}
-listeners.tcp.{{loop.index}} = {{item}}:5672
-{% endfor %}
-{% endif %}
-
 ## To listen on a specific interface, provide an IP address with port.
 ## For example, to listen only on localhost for both IPv4 and IPv6:
 ##
@@ -33,35 +27,37 @@ listeners.tcp.{{loop.index}} = {{item}}:5672
 # listeners.tcp.other_port = 5673
 # listeners.tcp.other_ip   = 10.10.10.10:5672
 
-
 ## TLS listeners are configured in the same fashion as TCP listeners,
 ## including the option to control the choice of interface.
 ##
 # listeners.ssl.default = 5671
 
-{% if rabbitmq.config.amqp_ssl_listeners is defined %}
-{% for item in rabbitmq.config.amqp_ssl_listeners %}
+{% for item in rabbitmq.config.listeners.tcp|default([]) %}
+listeners.tcp.{{loop.index}} = {{item}}:5672
+{% endfor %}
+
+{% for item in rabbitmq.config.listeners.ssl|default([]) %}
 listeners.ssl.{{loop.index}} = {{item}}:5671
 {% endfor %}
-{% endif %}
+
 
 ## Number of Erlang processes that will accept connections for the TCP
 ## and TLS listeners.
 ##
-# num_acceptors.tcp = 10
-# num_acceptors.ssl = 10
+num_acceptors.tcp = {{ rabbitmq.config.num_acceptors.tcp|default(10) }}
+num_acceptors.ssl = {{ rabbitmq.config.num_acceptors.ssl|default(10) }}
 
 
 ## Maximum amount of time allowed for the AMQP 0-9-1 and AMQP 1.0 handshake
 ## (performed after socket connection and TLS handshake) to complete, in milliseconds.
 ##
-# handshake_timeout = 10000
+handshake_timeout = {{ rabbitmq.config.handshake_timeout|default(10000) }}
 
 ## Set to 'true' to perform reverse DNS lookups when accepting a
 ## connection. rabbitmqctl and management UI will then display hostnames
 ## instead of IP addresses. Default value is `false`.
 ##
-# reverse_dns_lookups = false
+reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default(false) }}
 
 ##
 ## Security, Access Control
