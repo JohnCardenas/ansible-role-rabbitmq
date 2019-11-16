@@ -2,9 +2,7 @@
 - name: Enable RabbitMQ Plugins
   when: rabbitmq.plugins is defined
   rabbitmq_plugin:
-    names: "{{ item }}"
-    new_only: yes
+    names: "{{ rabbitmq.plugins | join(',') }}"
     state: enabled
-  loop: "{{ rabbitmq.plugins | flatten(levels=1) }}"
   notify:
     - restart rabbitmq-server

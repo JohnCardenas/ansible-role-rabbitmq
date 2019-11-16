@@ -35,7 +35,6 @@
 {% for item in rabbitmq.config.listeners.tcp|default([]) %}
 listeners.tcp.{{loop.index}} = {{item}}:5672
 {% endfor %}
-
 {% for item in rabbitmq.config.listeners.ssl|default([]) %}
 listeners.ssl.{{loop.index}} = {{item}}:5671
 {% endfor %}
@@ -45,8 +44,9 @@ listeners.ssl.{{loop.index}} = {{item}}:5671
 ## and TLS listeners.
 ##
 num_acceptors.tcp = {{ rabbitmq.config.num_acceptors.tcp|default(10) }}
+{% if rabbitmq.ssl is defined %}
 num_acceptors.ssl = {{ rabbitmq.config.num_acceptors.ssl|default(10) }}
-
+{% endif %}
 
 ## Maximum amount of time allowed for the AMQP 0-9-1 and AMQP 1.0 handshake
 ## (performed after socket connection and TLS handshake) to complete, in milliseconds.
@@ -57,7 +57,7 @@ handshake_timeout = {{ rabbitmq.config.handshake_timeout|default(10000) }}
 ## connection. rabbitmqctl and management UI will then display hostnames
 ## instead of IP addresses. Default value is `false`.
 ##
-reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default(false) }}
+reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default('false') }}
 
 ##
 ## Security, Access Control
@@ -125,6 +125,22 @@ reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default(false) }}
 # ssl_options.ciphers.34 = DHE-DSS-AES128-SHA
 # ssl_options.ciphers.35 = ECDH-ECDSA-AES128-SHA
 # ssl_options.ciphers.36 = ECDH-RSA-AES128-SHA
+
+{% if rabbitmq.ssl is defined %}
+ssl_options.verify               = {{ rabbitmq.config.ssl_options.verify|default('verify_peer') }}
+ssl_options.fail_if_no_peer_cert = {{ rabbitmq.config.ssl_options.fail_if_no_peer_cert|default('false') }}
+ssl_options.cacertfile           = {{ rabbitmq.config.ssl_options.cacertfile|default('/etc/ssl/certs/ca-bundle.crt') }}
+ssl_options.certfile             = /etc/rabbitmq/ssl/cert.pem
+ssl_options.keyfile              = /etc/rabbitmq/ssl/key.pem
+
+ssl_options.honor_cipher_order = {{ rabbitmq.config.ssl_options.honor_cipher_order|default('true') }}
+ssl_options.honor_ecc_order    = {{ rabbitmq.config.ssl_options.honor_ecc_order|default('true') }}
+
+{% for item in rabbitmq.config.ssl_options.ciphers %}
+ssl_options.ciphers.{{loop.index}}  = {{item}}
+{% endfor %}
+{% endif %}
+
 
 ## Select an authentication/authorisation backend to use.
 ##
