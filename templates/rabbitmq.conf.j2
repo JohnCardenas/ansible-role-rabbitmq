@@ -13,9 +13,11 @@
 ## By default, RabbitMQ will listen on all interfaces, using
 ## the standard (reserved) AMQP 0-9-1 and 1.0 port.
 ##
-{% if rabbitmq.allow_insecure|default(false, true) -%}
-listeners.tcp.default = 5672
-{%- else -%}
+{% if rabbitmq.amqp_listeners is defined %}
+  {% for item in rabbitmq.amqp_listeners -%}
+    listeners.tcp.{{loop.index}} = {{item}}
+  {%- endfor %}
+{% else -%}
 # listeners.tcp.default = 5672
 {%- endif %}
 
@@ -36,7 +38,12 @@ listeners.tcp.default = 5672
 ## TLS listeners are configured in the same fashion as TCP listeners,
 ## including the option to control the choice of interface.
 ##
+{% if rabbitmq.ssl is defined -%}
+listeners.ssl.default = 5671
+{%- else -%}
 # listeners.ssl.default = 5671
+{%- endif %}
+
 
 ## Number of Erlang processes that will accept connections for the TCP
 ## and TLS listeners.

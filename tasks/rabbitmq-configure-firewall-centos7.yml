@@ -2,44 +2,45 @@
 - name: Open AMQP Ports
   when: rabbitmq.allow_amqp_cidrs is not undefined
   block:
-  - name: Open AMQP SSL Port
-    firewalld:
-      rich_rule: "rule family=ipv4 source address={{item}} port port=5671 protocol=tcp accept"
-      state: enabled
-      permanent: yes
-      immediate: yes
-    loop: "{{ rabbitmq.allow_amqp_cidrs | flatten(levels=1) }}"
-  - name: Open AMQP Port
-    when: rabbitmq.allow_insecure|default(false) == true
-    firewalld:
-      rich_rule: "rule family=ipv4 source address={{item}} port port=5672 protocol=tcp accept"
-      state: enabled
-      permanent: yes
-      immediate: yes
-    loop: "{{ rabbitmq.allow_amqp_cidrs | flatten(levels=1) }}"
+    - name: Open AMQP SSL Port
+      when: rabbitmq.ssl is defined
+      firewalld:
+        port: 5671/tcp
+        state: enabled
+        permanent: yes
+        immediate: yes
+    - name: Open AMQP Port
+      when: rabbitmq.allow_insecure|default(false) == true
+      firewalld:
+        port: 5672/tcp
+        state: enabled
+        permanent: yes
+        immediate: yes
 
 - name: Open Management Port
-  when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.allow_management_cidrs is not undefined"
+  when: "'rabbitmq_management' in rabbitmq.plugins"
   firewalld:
-    rich_rule: "rule family=ipv4 source address={{item}} port port=15672 protocol=tcp accept"
+    port: 15672/tcp
     state: enabled
     permanent: yes
     immediate: yes
   loop: "{{ rabbitmq.allow_management_cidrs | flatten(levels=1) }}"
 
 - name: Open MQTT Ports
-  when: "'rabbitmq_mqtt' in rabbitmq.plugins and rabbitmq.allow_mqtt_cidrs is not undefined"
+  when: "'rabbitmq_mqtt' in rabbitmq.plugins"
   block:
     - name: Open MQTT Port
+      when: rabbitmq.allow_insecure|default(false) == true
       firewalld:
-        rich_rule: "rule family=ipv4 source address={{item}} port port=1883 protocol=tcp accept"
+        port: 1883/tcp
         state: enabled
         permanent: yes
         immediate: yes
       loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
     - name: Open MQTT SSL Port
+      when: rabbitmq.ssl is defined
       firewalld:
-        rich_rule: "rule family=ipv4 source address={{item}} port port=8883 protocol=tcp accept"
+        port: 8883/tcp
         state: enabled
         permanent: yes
         immediate: yes
