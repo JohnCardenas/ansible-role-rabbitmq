@@ -32,14 +32,13 @@
 ##
 # listeners.ssl.default = 5671
 
-{% for item in rabbitmq.config.listeners.tcp|default([]) %}
-listeners.tcp.{{loop.index}} = {{item}}:5672
+{% for item in rabbitmq.config.listeners.tcp|default([]) -%}
+  listeners.tcp.{{loop.index}} = {{item}}:5672
 {% endfor %}
-{% if rabbitmq.ssl is defined %}
+
 {% for item in rabbitmq.config.listeners.ssl|default([]) %}
-listeners.ssl.{{loop.index}} = {{item}}:5671
+  listeners.ssl.{{loop.index}} = {{item}}:5671
 {% endfor %}
-{% endif %}
 
 
 ## Number of Erlang processes that will accept connections for the TCP
