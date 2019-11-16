@@ -4,12 +4,13 @@
   block:
   - name: Open AMQP SSL Port
     firewalld:
-      rich_rule: "rule family=ipv4 source address={{item}} port port=5672 protocol=tcp accept"
+      rich_rule: "rule family=ipv4 source address={{item}} port port=5671 protocol=tcp accept"
       state: enabled
       permanent: yes
       immediate: yes
     loop: "{{ rabbitmq.allow_amqp_cidrs | flatten(levels=1) }}"
   - name: Open AMQP Port
+    when: rabbitmq.allow_insecure|default(false) == true
     firewalld:
       rich_rule: "rule family=ipv4 source address={{item}} port port=5672 protocol=tcp accept"
       state: enabled
