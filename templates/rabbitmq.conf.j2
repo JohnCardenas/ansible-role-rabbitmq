@@ -35,29 +35,41 @@
 {% for item in rabbitmq.config.listeners.tcp|default([]) %}
 listeners.tcp.{{loop.index}} = {{item}}:5672
 {% endfor %}
+{% if rabbitmq.ssl is defined %}
 {% for item in rabbitmq.config.listeners.ssl|default([]) %}
 listeners.ssl.{{loop.index}} = {{item}}:5671
 {% endfor %}
+{% endif %}
 
 
 ## Number of Erlang processes that will accept connections for the TCP
 ## and TLS listeners.
 ##
+# num_acceptors.tcp = 10
+{% if rabbitmq.config.num_acceptors.tcp is defined %}
 num_acceptors.tcp = {{ rabbitmq.config.num_acceptors.tcp|default(10) }}
-{% if rabbitmq.ssl is defined %}
+{% endif %}
+# num_acceptors.ssl = 10
+{% if rabbitmq.config.num_acceptors.ssl is defined %}
 num_acceptors.ssl = {{ rabbitmq.config.num_acceptors.ssl|default(10) }}
 {% endif %}
 
 ## Maximum amount of time allowed for the AMQP 0-9-1 and AMQP 1.0 handshake
 ## (performed after socket connection and TLS handshake) to complete, in milliseconds.
 ##
+# handshake_timeout = 10000
+{% if rabbitmq.config.handshake_timeout is defined %}
 handshake_timeout = {{ rabbitmq.config.handshake_timeout|default(10000) }}
+{% endif %}
 
 ## Set to 'true' to perform reverse DNS lookups when accepting a
 ## connection. rabbitmqctl and management UI will then display hostnames
 ## instead of IP addresses. Default value is `false`.
 ##
+# reverse_dns_lookups = false
+{% if rabbitmq.config.reverse_dns_lookups is defined %}
 reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default('false') }}
+{% endif %}
 
 ##
 ## Security, Access Control
@@ -75,6 +87,12 @@ reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default('false') }}
 ## Uncomment the following line if you want to allow access to the
 ## guest user from anywhere on the network.
 # loopback_users.guest = false
+
+{% for user in rabbitmq.config.loopback_users|default([]) %}
+{% for key, value in user.items() %}
+loopback_users.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
 
 ## TLS configuration.
 ##
@@ -126,17 +144,30 @@ reverse_dns_lookups = {{ rabbitmq.config.reverse_dns_lookups|default('false') }}
 # ssl_options.ciphers.35 = ECDH-ECDSA-AES128-SHA
 # ssl_options.ciphers.36 = ECDH-RSA-AES128-SHA
 
-{% if rabbitmq.ssl is defined %}
+{% if rabbitmq.config.ssl_options.verify is defined %}
 ssl_options.verify               = {{ rabbitmq.config.ssl_options.verify|default('verify_peer') }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.fail_if_no_peer_cert is defined %}
 ssl_options.fail_if_no_peer_cert = {{ rabbitmq.config.ssl_options.fail_if_no_peer_cert|default('false') }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.cacertfile is defined %}
 ssl_options.cacertfile           = {{ rabbitmq.config.ssl_options.cacertfile|default('/etc/ssl/certs/ca-bundle.crt') }}
-ssl_options.certfile             = /etc/rabbitmq/ssl/cert.pem
-ssl_options.keyfile              = /etc/rabbitmq/ssl/key.pem
+{% endif %}
+{% if rabbitmq.config.ssl_options.certfile is defined %}
+ssl_options.certfile             = {{ rabbitmq.config.ssl_options.certfile }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.keyfile is defined %}
+ssl_options.keyfile              = {{ rabbitmq.config.ssl_options.keyfile }}
+{% endif %}
 
+{% if rabbitmq.config.ssl_options.honor_cipher_order is defined %}
 ssl_options.honor_cipher_order = {{ rabbitmq.config.ssl_options.honor_cipher_order|default('true') }}
+{% endif %}
+{% if rabbitmq.config.ssl_options.honor_ecc_order is defined %}
 ssl_options.honor_ecc_order    = {{ rabbitmq.config.ssl_options.honor_ecc_order|default('true') }}
+{% endif %}
 
-{% for item in rabbitmq.config.ssl_options.ciphers %}
+{% for item in rabbitmq.config.ssl_options.ciphers|default([]) %}
 ssl_options.ciphers.{{loop.index}}  = {{item}}
 {% endfor %}
 {% endif %}
@@ -181,6 +212,12 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 # auth_backends.1   = rabbit_auth_backend_http
 # auth_backends.2   = rabbit_auth_backend_internal
 
+{% for item in rabbitmq.config.auth_backends|default([]) %}
+auth_backends.{{loop.count}}.authn = {{item.authn}}
+auth_backends.{{loop.count}}.authz = {{item.authz}}
+{% endfor %}
+
+
 ## Authentication
 ## The built-in mechanisms are 'PLAIN',
 ## 'AMQPLAIN', and 'EXTERNAL' Additional mechanisms can be added via
@@ -208,6 +245,11 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 ##
 # auth_mechanisms.1 = EXTERNAL
 
+{% for item in rabbitmq.config.auth_mechanisms|default([]) %}
+auth_mechanisms.{{loop.count}} = {{item}}
+{% endfor %}
+
+
 ## This pertains to both the rabbitmq-auth-mechanism-ssl plugin and
 ## STOMP ssl_cert_login configurations. See the RabbitMQ STOMP plugin
 ## configuration section later in this file and the README in
@@ -217,15 +259,24 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 ## To use the TLS cert's CN instead of its DN as the username
 ##
 # ssl_cert_login_from   = common_name
+{% if rabbitmq.config.ssl_cert_login_from is defined %}
+ssl_cert_login_from = {{ rabbitmq.config.ssl_cert_login_from|default('common_name') }}
+{% endif %}
 
 ## TLS handshake timeout, in milliseconds.
 ##
 # ssl_handshake_timeout = 5000
+{% if rabbitmq.config.ssl_handshake_timeout is defined %}
+ssl_handshake_timeout = {{ rabbitmq.config.ssl_handshake_timeout|default(5000) }}
+{% endif %}
 
 
 ## Cluster name
 ##
 # cluster_name = dev3.eng.megacorp.local
+{% if rabbitmq.config.cluster_name is defined %}
+cluster_name = {{rabbitmq.config.cluster_name}}
+{% endif %}
 
 ## Password hashing implementation. Will only affect newly
 ## created users. To recalculate hash for an existing user
@@ -240,6 +291,10 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 ## as a temporary measure!) by setting this to rabbit_password_hashing_md5.
 ##
 # password_hashing_module = rabbit_password_hashing_md5
+
+{% if rabbitmq.config.password_hashing_module is defined %}
+password_hashing_module = {{rabbitmq.config.password_hashing_module}}
+{% endif %}
 
 ##
 ## Default User / VHost
@@ -269,6 +324,28 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 # default_user_tags.management = true
 # default_user_tags.custom_tag = true
 
+{% if rabbitmq.config.default_vhost is defined %}
+default_vhost = {{ rabbitmq.config.default_vhost|default('/') }}
+{% endif %}
+{% if rabbitmq.config.default_user is defined %}
+default_user = {{ rabbitmq.config.default_user|default('guest') }}
+{% endif %}
+{% if rabbitmq.config.default_pass is defined %}
+default_pass = {{ rabbitmq.config.default_pass|default('guest') }}
+{% endif %}
+
+{% if rabbitmq.config.default_permissions is defined %}
+default_permissions.configure = {{ rabbitmq.config.default_permissions.configure|default('.*') }}
+default_permissions.read      = {{ rabbitmq.config.default_permissions.read|default('.*') }}
+default_permissions.write     = {{ rabbitmq.config.default_permissions.write|default('.*') }}
+{% endif %}
+
+{% for dict in rabbitmq.config.default_user_tags|default([]) }}
+{% for key, value in dict.items() %}
+default_user_tags.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
+
 ##
 ## Additional network and protocol related configuration
 ## =====================================================
@@ -281,20 +358,32 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 ## * https://rabbitmq.com/networking.html
 ##
 # heartbeat = 60
+{% if rabbitmq.config.heartbeat is defined %}
+heartbeat = {{ rabbitmq.config.heartbeat|default(60) }}
+{% endif %}
 
 ## Set the max permissible size of an AMQP frame (in bytes).
 ##
 # frame_max = 131072
+{% if rabbitmq.config.frame_max is defined %}
+frame_max = {{ rabbitmq.config.frame_max|default(131072) }}
+{% endif %}
 
 ## Set the max frame size the server will accept before connection
 ## tuning occurs
 ##
 # initial_frame_max = 4096
+{% if rabbitmq.config.initial_frame_max is defined %}
+initial_frame_max = {{ rabbitmq.config.initial_frame_max|default(4096) }}
+{% endif %}
 
 ## Set the max permissible number of channels per connection.
 ## 0 means "no limit".
 ##
 # channel_max = 128
+{% if rabbitmq.config.channel_max is defined %}
+channel_max = {{ rabbitmq.config.channel_max|default(128) }}
+{% endif %}
 
 ## Customising TCP Listener (Socket) Configuration.
 ##
@@ -307,13 +396,26 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 # tcp_listen_options.backlog = 128
 # tcp_listen_options.nodelay = true
 # tcp_listen_options.exit_on_close = false
-#
+
 # tcp_listen_options.keepalive = true
 # tcp_listen_options.send_timeout = 15000
-#
+
 # tcp_listen_options.buffer = 196608
 # tcp_listen_options.sndbuf = 196608
 # tcp_listen_options.recbuf = 196608
+
+{% if rabbitmq.config.tcp_listen_options is defined %}
+tcp_listen_options.backlog = {{ rabbitmq.config.tcp_listen_options.backlog|default(128) }}
+tcp_listen_options.nodelay = {{ rabbitmq.config.tcp_listen_options.nodelay|default('true') }}
+tcp_listen_options.exit_on_close = {{ rabbitmq.config.tcp_listen_options.exit_on_close|default('false') }}
+
+tcp_listen_options.keepalive = {{ rabbitmq.config.tcp_listen_options.keepalive|default('true') }}
+tcp_listen_options.send_timeout = {{ rabbitmq.config.tcp_listen_options.send_timeout|default(15000) }}
+
+tcp_listen_options.buffer = {{ rabbitmq.config.tcp_listen_options.buffer|default(196608) }}
+tcp_listen_options.sndbuf = {{ rabbitmq.config.tcp_listen_options.sndbuf|default(196608) }}
+tcp_listen_options.recbuf = {{ rabbitmq.config.tcp_listen_options.recbuf|default(196608) }}
+{% endif %}
 
 ##
 ## Resource Limits & Flow Control
@@ -324,11 +426,11 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 ## Memory-based Flow Control threshold.
 ##
 # vm_memory_high_watermark.relative = 0.4
+{% if rabbitmq.config.vm_memory_high_watermark.relative is defined %}
+vm_memory_high_watermark.relative = {{ rabbitmq.config.vm_memory_high_watermark.relative|default('0.4') }}
+{% endif %}
 
 ## Alternatively, we can set a limit (in bytes) of RAM used by the node.
-##
-# vm_memory_high_watermark.absolute = 1073741824
-
 ## Or you can set absolute value using memory units (with RabbitMQ 3.6.0+).
 ## Absolute watermark will be ignored if relative is defined!
 ##
@@ -343,7 +445,9 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 ## MB: megabytes (10^6 - 1,000,000 bytes)
 ## GB: gigabytes (10^9 - 1,000,000,000 bytes)
 
-
+{% if rabbitmq.config.vm_memory_high_watermark.absolute is defined %}
+vm_memory_high_watermark.absolute = {{ rabbitmq.config.vm_memory_high_watermark.absolute|default('2GB') }}
+{% endif %}
 
 ## Fraction of the high watermark limit at which queues start to
 ## page message out to disc in order to free up memory.
@@ -361,20 +465,32 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 ## as possible, see https://rabbitmq.com/lazy-queues.html.
 ##
 # vm_memory_high_watermark_paging_ratio = 0.5
+{% if rabbitmq.config.vm_memory_high_watermark_paging_ratio is defined %}
+vm_memory_high_watermark_paging_ratio = {{ rabbitmq.config.vm_memory_high_watermark_paging_ratio|default('0.5') }}
+{% endif %}
 
 ## Selects Erlang VM memory consumption calculation strategy. Can be `allocated`, `rss` or `legacy` (aliased as `erlang`),
 ## Introduced in 3.6.11. `rss` is the default as of 3.6.12.
 ## See https://github.com/rabbitmq/rabbitmq-server/issues/1223 and rabbitmq/rabbitmq-common#224 for background.
 # vm_memory_calculation_strategy = rss
+{% if rabbitmq.config.vm_memory_calculation_strategy is defined %}
+vm_memory_calculation_strategy = {{ rabbitmq.config.vm_memory_calculation_strategy|default('rss') }}
+{% endif %}
 
 ## Interval (in milliseconds) at which we perform the check of the memory
 ## levels against the watermarks.
 ##
 # memory_monitor_interval = 2500
+{% if rabbitmq.config.memory_monitor_interval is defined %}
+memory_monitor_interval = {{ rabbitmq.config.memory_monitor_interval|default(2500) }}
+{% endif %}
 
 ## The total memory available can be calculated from the OS resources
 ## - default option - or provided as a configuration parameter.
 # total_memory_available_override_value = 2GB
+{% if rabbitmq.config.total_memory_available_override_value is defined %}
+total_memory_available_override_value = {{ rabbitmq.config.total_memory_available_override_value|default('2GB') }}
+{% endif %}
 
 ## Set disk free limit (in bytes). Once free disk space reaches this
 ## lower bound, a disk alarm will be set - see the documentation
@@ -389,32 +505,59 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 # disk_free_limit.absolute = 50mb
 # disk_free_limit.absolute = 5GB
 
+{% if rabbitmq.config.disk_free_limit.absolute is defined %}
+disk_free_limit.absolute = {{ rabbitmq.config.disk_free_limit.absolute|default('5GB') }}
+{% endif %}
+
 ## Alternatively, we can set a limit relative to total available RAM.
 ##
 ## Values lower than 1.0 can be dangerous and should be used carefully.
 # disk_free_limit.relative = 2.0
+{% if rabbitmq.config.disk_free_limit.relative is defined %}
+disk_free_limit.relative = {{ rabbitmq.config.disk_free_limit.relative|default('2.0') }}
+{% endif %}
 
 ##
 ## Clustering
 ## =====================
 ##
 # cluster_partition_handling = ignore
+{% if rabbitmq.config.cluster_partition_handling is defined %}
+cluster_partition_handling = {{ rabbitmq.config.cluster_partition_handling|default('ignore') }}
+{% endif %}
 
 ## pause_if_all_down strategy require additional configuration
 # cluster_partition_handling = pause_if_all_down
+{% if rabbitmq.config.cluster_partition_handling.pause_if_all_down is defined %}
+cluster_partition_handling = pause_if_all_down
+{% else if rabbitmq.config.cluster_partition_handling is defined %}
+cluster_partition_handling = {{ rabbitmq.config.cluster_partition_handling }}
+{% endif %}
 
 ## Recover strategy. Can be either 'autoheal' or 'ignore'
 # cluster_partition_handling.pause_if_all_down.recover = ignore
+{% if rabbitmq.config.cluster_partition_handling.pause_if_all_down.recover is defined %}
+cluster_partition_handling.pause_if_all_down.recover = {{ rabbitmq.config.cluster_partition_handling.pause_if_all_down.recover|default('ignore') }}
+{% endif %}
 
 ## Node names to check
 # cluster_partition_handling.pause_if_all_down.nodes.1 = rabbit@localhost
 # cluster_partition_handling.pause_if_all_down.nodes.2 = hare@localhost
+
+{% if rabbitmq.cluster_partition_handling.pause_if_all_down.nodes is defined %}
+{% for item in rabbitmq.cluster_partition_handling.pause_if_all_down.nodes %}
+cluster_partition_handling.pause_if_all_down.nodes.{{loop.counter}} = {{item}}
+{% endfor %}
+{% endif %}
 
 ## Mirror sync batch size, in messages. Increasing this will speed
 ## up syncing but total batch size in bytes must not exceed 2 GiB.
 ## Available in RabbitMQ 3.6.0 or later.
 ##
 # mirroring_sync_batch_size = 4096
+{% if rabbitmq.config.mirroring_sync_batch_size is defined %}
+mirroring_sync_batch_size = {{ rabbitmq.config.mirroring_sync_batch_size|default(4096) }}
+{% endif %}
 
 ## Make clustering happen *automatically* at startup. Only applied
 ## to nodes that have just been reset or started for the first time.
@@ -436,9 +579,24 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 # cluster_formation.peer_discovery_backend = rabbit_peer_discovery_dns
 # cluster_formation.dns.hostname = discovery.eng.example.local
 
+{% if rabbitmq.config.cluster_formation is defined %}
+  {% if rabbitmq.config.cluster_formation.peer_discovery_backend == 'rabbit_peer_discovery_classic_config' -%}
+    cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
+    {% for item in rabbitmq.config.cluster_formation.classic_config.nodes -%}
+      cluster_formation.classic_config.nodes.{{loop.index}} = {{item}}
+    {% endfor %}
+  {% elif rabbitmq.config.cluster_formation.peer_discovery_backend == 'rabbit_peer_discovery_dns' %}
+    cluster_formation.peer_discovery_backend = rabbit_peer_discovery_dns
+    cluster_formation.dns.hostname = {{ rabbitmq.config.cluster_formation.dns.hostname }}
+  {% endif %}
+{% endif %}
+
 ## This node's type can be configured. If you are not sure
 ## what node type to use, always use 'disc'.
 # cluster_formation.node_type = disc
+{% if rabbitmq.config.cluster_formation.node_type is defined %}
+cluster_formation.node_type = {{ rabbitmq.config.cluster_formation.node_type|default('disc') }}
+{% endif %}
 
 ## Interval (in milliseconds) at which we send keepalive messages
 ## to other cluster members. Note that this is not the same thing
@@ -446,6 +604,10 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 ## to be considered down.
 ##
 # cluster_keepalive_interval = 10000
+{% if rabbitmq.config.cluster_keepalive_interval is defined %}
+cluster_keepalive_interval = {{ rabbitmq.config.cluster_keepalive_interval|default(10000) }}
+{% endif %}
+
 
 ##
 ## Statistics Collection
@@ -590,8 +752,9 @@ ssl_options.ciphers.{{loop.index}}  = {{item}}
 # management.tcp.request_timeout    = 120
 # management.tcp.compress           = true
 
-{% if rabbitmq.config.management_ip is defined %}
-management.tcp.ip = {{rabbitmq.config.management_ip}}
+{% if rabbitmq.config.management.tcp.ip is defined %}
+management.tcp.port = 15672
+management.tcp.ip = {{ rabbitmq.config.management.tcp.ip|default('0.0.0.0') }}
 {% endif %}
 
 ## HTTPS listener settings.

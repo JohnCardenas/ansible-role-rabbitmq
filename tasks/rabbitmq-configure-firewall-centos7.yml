@@ -16,7 +16,7 @@
     immediate: true
 
 - name: Open AMQP SSL Port
-  when: rabbitmq.config.amqp_ssl_listeners is defined
+  when: rabbitmq.config.listeners.ssl is defined and rabbitmq.ssl is defined
   firewalld:
     port: 5671/tcp
     state: enabled
@@ -24,7 +24,7 @@
     immediate: true
 
 - name: Close AMQP SSL Port
-  when: rabbitmq.config.amqp_ssl_listeners is not defined
+  when: rabbitmq.config.listeners.ssl is not defined and rabbitmq.ssl is not defined
   firewalld:
     port: 5671/tcp
     state: disabled
@@ -32,7 +32,7 @@
     immediate: true
 
 - name: Open Management Port
-  when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.config.management_allow_insecure|default(false) == true"
+  when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.config.management.tcp.ip is defined"
   firewalld:
     port: 15672/tcp
     state: enabled
@@ -40,7 +40,7 @@
     immediate: true
 
 - name: Close Management Port
-  when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.config.management_allow_insecure|default(false) == false"
+  when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.config.management.tcp.ip is not defined"
   firewalld:
     port: 15672/tcp
     state: disabled
