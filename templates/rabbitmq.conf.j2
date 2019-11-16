@@ -13,7 +13,7 @@
 ## By default, RabbitMQ will listen on all interfaces, using
 ## the standard (reserved) AMQP 0-9-1 and 1.0 port.
 ##
-{% if rabbitmq.allow_insecure == true -%}
+{% if rabbitmq.allow_insecure|default(false, true) -%}
 listeners.tcp.default = 5672
 {%- else -%}
 # listeners.tcp.default = 5672
