@@ -13,14 +13,13 @@
 ## By default, RabbitMQ will listen on all interfaces, using
 ## the standard (reserved) AMQP 0-9-1 and 1.0 port.
 ##
-{% if rabbitmq.amqp_listeners is defined %}
-  {% for item in rabbitmq.amqp_listeners -%}
-    listeners.tcp.{{loop.index}} = {{item}}
-  {%- endfor %}
-{% else -%}
 # listeners.tcp.default = 5672
-{%- endif %}
 
+{% if rabbitmq.config.amqp_listeners is defined %}
+{% for item in rabbitmq.config.amqp_listeners %}
+listeners.tcp.{{loop.index}} = {{item}}:5672
+{% endfor %}
+{% endif %}
 
 ## To listen on a specific interface, provide an IP address with port.
 ## For example, to listen only on localhost for both IPv4 and IPv6:
@@ -38,12 +37,13 @@
 ## TLS listeners are configured in the same fashion as TCP listeners,
 ## including the option to control the choice of interface.
 ##
-{% if rabbitmq.ssl is defined -%}
-listeners.ssl.default = 5671
-{%- else -%}
 # listeners.ssl.default = 5671
-{%- endif %}
 
+{% if rabbitmq.config.amqp_ssl_listeners is defined %}
+{% for item in rabbitmq.config.amqp_ssl_listeners %}
+listeners.ssl.{{loop.index}} = {{item}}:5671
+{% endfor %}
+{% endif %}
 
 ## Number of Erlang processes that will accept connections for the TCP
 ## and TLS listeners.
@@ -577,6 +577,10 @@ listeners.ssl.default = 5671
 # management.tcp.inactivity_timeout = 120
 # management.tcp.request_timeout    = 120
 # management.tcp.compress           = true
+
+{% if rabbitmq.config.management_ip is defined %}
+management.tcp.ip = {{rabbitmq.config.management_ip}}
+{% endif %}
 
 ## HTTPS listener settings.
 ## See https://rabbitmq.com/management.html and https://rabbitmq.com/ssl.html for details.

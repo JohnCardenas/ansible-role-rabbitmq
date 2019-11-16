@@ -1,47 +1,94 @@
 ---
-- name: Open AMQP Ports
-  when: rabbitmq.allow_amqp_cidrs is not undefined
-  block:
-    - name: Open AMQP SSL Port
-      when: rabbitmq.ssl is defined
-      firewalld:
-        port: 5671/tcp
-        state: enabled
-        permanent: yes
-        immediate: yes
-    - name: Open AMQP Port
-      when: rabbitmq.allow_insecure|default(false) == true
-      firewalld:
-        port: 5672/tcp
-        state: enabled
-        permanent: yes
-        immediate: yes
+- name: Open AMQP Port
+  when: rabbitmq.config.amqp_listeners is defined
+  firewalld:
+    port: 5672/tcp
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Close AMQP Port
+  when: rabbitmq.config.amqp_listeners is not defined
+  firewalld:
+    port: 5672/tcp
+    state: disabled
+    permanent: true
+    immediate: true
+
+- name: Open AMQP SSL Port
+  when: rabbitmq.config.amqp_ssl_listeners is defined
+  firewalld:
+    port: 5671/tcp
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Close AMQP SSL Port
+  when: rabbitmq.config.amqp_ssl_listeners is not defined
+  firewalld:
+    port: 5671/tcp
+    state: disabled
+    permanent: true
+    immediate: true
 
 - name: Open Management Port
-  when: "'rabbitmq_management' in rabbitmq.plugins"
+  when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.config.management_allow_insecure|default(false) == true"
   firewalld:
     port: 15672/tcp
     state: enabled
-    permanent: yes
-    immediate: yes
-  loop: "{{ rabbitmq.allow_management_cidrs | flatten(levels=1) }}"
+    permanent: true
+    immediate: true
 
-- name: Open MQTT Ports
-  when: "'rabbitmq_mqtt' in rabbitmq.plugins"
-  block:
-    - name: Open MQTT Port
-      when: rabbitmq.allow_insecure|default(false) == true
-      firewalld:
-        port: 1883/tcp
-        state: enabled
-        permanent: yes
-        immediate: yes
-      loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
-    - name: Open MQTT SSL Port
-      when: rabbitmq.ssl is defined
-      firewalld:
-        port: 8883/tcp
-        state: enabled
-        permanent: yes
-        immediate: yes
-      loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
+- name: Close Management Port
+  when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.config.management_allow_insecure|default(false) == false"
+  firewalld:
+    port: 15672/tcp
+    state: disabled
+    permanent: true
+    immediate: true
+  
+- name: Open Management SSL Port
+  when: "'rabbitmq_management' in rabbitmq.plugins and rabbitmq.config.ssl is defined"
+  firewalld:
+    port: 15671/tcp
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Close Management SSL Port
+  when: "'rabbitmq_management' not in rabbitmq.plugins or rabbitmq.config.ssl is not defined"
+  firewalld:
+    port: 15671/tcp
+    state: enabled
+    permanent: true
+    immediate: true
+
+
+# - name: Open Management Port
+#   when: "'rabbitmq_management' in rabbitmq.plugins"
+#   firewalld:
+#     port: 15672/tcp
+#     state: enabled
+#     permanent: yes
+#     immediate: yes
+#   loop: "{{ rabbitmq.allow_management_cidrs | flatten(levels=1) }}"
+
+# - name: Open MQTT Ports
+#   when: "'rabbitmq_mqtt' in rabbitmq.plugins"
+#   block:
+#     - name: Open MQTT Port
+#       when: rabbitmq.allow_insecure|default(false) == true
+#       firewalld:
+#         port: 1883/tcp
+#         state: enabled
+#         permanent: yes
+#         immediate: yes
+#       loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
+#     - name: Open MQTT SSL Port
+#       when: rabbitmq.ssl is defined
+#       firewalld:
+#         port: 8883/tcp
+#         state: enabled
+#         permanent: yes
+#         immediate: yes
+#       loop: "{{ rabbitmq.allow_mqtt_cidrs | flatten(levels=1) }}"
