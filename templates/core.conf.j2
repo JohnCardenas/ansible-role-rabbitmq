@@ -87,11 +87,11 @@
 ## guest user from anywhere on the network.
 # loopback_users.guest = false
 
-{% for user in rabbitmq.config.loopback_users|default([]) -%}
-  {%- for key, value in user.items() -%}
-    loopback_users.{{key}} = {{value}}
-  {% endfor -%}
-{%- endfor %}
+{% for user in rabbitmq.config.loopback_users|default([]) %}
+{% for key, value in user.items() %}
+loopback_users.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
 
 ## TLS configuration.
 ##
