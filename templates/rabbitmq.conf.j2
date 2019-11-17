@@ -859,6 +859,7 @@ management.tcp.compress = {{ rabbitmq.config.management.tcp.compress|default('tr
 management.ssl.cacertfile = {{ rabbitmq.config.management.ssl.cacertfile|default('/etc/ssl/certs/ca-bundle.crt') }}
 {% endif %}
 {% if rabbitmq.config.management.ssl.certfile is defined %}
+management.ssl.port = 15671
 management.ssl.certfile = {{ rabbitmq.config.management.ssl.certfile }}
 {% endif %}
 {% if rabbitmq.config.management.ssl.keyfile is defined %}
@@ -994,7 +995,7 @@ stomp.proxy_protocol = {{ rabbitmq.config.stomp.proxy_protocol|default('false') 
 # ssl_options.fail_if_no_peer_cert = true
 
 {% for item in rabbitmq.config.stomp.listeners.ssl|default([]) %}
-stomp.listeners.ssl.{{loop.index}} = {{item}}
+stomp.listeners.ssl.{{loop.index}} = {{item}}:61614
 {% endfor %}
 
 ## Number of Erlang processes that will accept connections for the TCP
