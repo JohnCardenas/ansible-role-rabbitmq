@@ -5,6 +5,6 @@
     dest: /etc/rabbitmq/rabbitmq.conf
     owner: rabbitmq
     group: rabbitmq
-    mode: u=rw,g=r,o=r
+    mode: 0440
   notify:
     - restart rabbitmq-server
