@@ -344,3 +344,574 @@ default_permissions.write     = {{ rabbitmq.config.default_permissions.write|def
     default_user_tags.{{key}} = {{value}}
   {% endfor -%}
 {%- endfor %}
+
+
+##
+## Additional network and protocol related configuration
+## =====================================================
+##
+
+## Set the default AMQP 0-9-1 heartbeat interval (in seconds).
+## Related doc guides:
+##
+## * https://rabbitmq.com/heartbeats.html
+## * https://rabbitmq.com/networking.html
+##
+# heartbeat = 60
+{% if rabbitmq.config.heartbeat is defined %}
+heartbeat = {{ rabbitmq.config.heartbeat|default(60) }}
+{% endif %}
+
+## Set the max permissible size of an AMQP frame (in bytes).
+##
+# frame_max = 131072
+{% if rabbitmq.config.frame_max is defined %}
+frame_max = {{ rabbitmq.config.frame_max|default(131072) }}
+{% endif %}
+
+## Set the max frame size the server will accept before connection
+## tuning occurs
+##
+# initial_frame_max = 4096
+{% if rabbitmq.config.initial_frame_max is defined %}
+initial_frame_max = {{ rabbitmq.config.initial_frame_max|default(4096) }}
+{% endif %}
+
+## Set the max permissible number of channels per connection.
+## 0 means "no limit".
+##
+# channel_max = 128
+{% if rabbitmq.config.channel_max is defined %}
+channel_max = {{ rabbitmq.config.channel_max|default(128) }}
+{% endif %}
+
+## Customising TCP Listener (Socket) Configuration.
+##
+## Related doc guides:
+##
+## * https://rabbitmq.com/networking.html
+## * https://www.erlang.org/doc/man/inet.html#setopts-2
+##
+
+# tcp_listen_options.backlog = 128
+# tcp_listen_options.nodelay = true
+# tcp_listen_options.exit_on_close = false
+
+# tcp_listen_options.keepalive = true
+# tcp_listen_options.send_timeout = 15000
+
+# tcp_listen_options.buffer = 196608
+# tcp_listen_options.sndbuf = 196608
+# tcp_listen_options.recbuf = 196608
+
+{% if rabbitmq.config.tcp_listen_options is defined %}
+tcp_listen_options.backlog = {{ rabbitmq.config.tcp_listen_options.backlog|default(128) }}
+tcp_listen_options.nodelay = {{ rabbitmq.config.tcp_listen_options.nodelay|default('true') }}
+tcp_listen_options.exit_on_close = {{ rabbitmq.config.tcp_listen_options.exit_on_close|default('false') }}
+
+tcp_listen_options.keepalive = {{ rabbitmq.config.tcp_listen_options.keepalive|default('true') }}
+tcp_listen_options.send_timeout = {{ rabbitmq.config.tcp_listen_options.send_timeout|default(15000) }}
+
+tcp_listen_options.buffer = {{ rabbitmq.config.tcp_listen_options.buffer|default(196608) }}
+tcp_listen_options.sndbuf = {{ rabbitmq.config.tcp_listen_options.sndbuf|default(196608) }}
+tcp_listen_options.recbuf = {{ rabbitmq.config.tcp_listen_options.recbuf|default(196608) }}
+{% endif %}
+
+
+##
+## Resource Limits & Flow Control
+## ==============================
+##
+## Related doc guide: https://rabbitmq.com/memory.html.
+
+## Memory-based Flow Control threshold.
+##
+# vm_memory_high_watermark.relative = 0.4
+{% if rabbitmq.config.vm_memory_high_watermark.relative is defined %}
+vm_memory_high_watermark.relative = {{ rabbitmq.config.vm_memory_high_watermark.relative|default('0.4') }}
+{% endif %}
+
+## Alternatively, we can set a limit (in bytes) of RAM used by the node.
+## Or you can set absolute value using memory units (with RabbitMQ 3.6.0+).
+## Absolute watermark will be ignored if relative is defined!
+##
+# vm_memory_high_watermark.absolute = 2GB
+##
+## Supported unit symbols:
+##
+## k, kiB: kibibytes (2^10 - 1,024 bytes)
+## M, MiB: mebibytes (2^20 - 1,048,576 bytes)
+## G, GiB: gibibytes (2^30 - 1,073,741,824 bytes)
+## kB: kilobytes (10^3 - 1,000 bytes)
+## MB: megabytes (10^6 - 1,000,000 bytes)
+## GB: gigabytes (10^9 - 1,000,000,000 bytes)
+
+{% if rabbitmq.config.vm_memory_high_watermark.absolute is defined %}
+vm_memory_high_watermark.absolute = {{ rabbitmq.config.vm_memory_high_watermark.absolute|default('2GB') }}
+{% endif %}
+
+## Fraction of the high watermark limit at which queues start to
+## page message out to disc in order to free up memory.
+## For example, when vm_memory_high_watermark is set to 0.4 and this value is set to 0.5,
+## paging can begin as early as when 20% of total available RAM is used by the node.
+##
+## Values greater than 1.0 can be dangerous and should be used carefully.
+##
+## One alternative to this is to use durable queues and publish messages
+## as persistent (delivery mode = 2). With this combination queues will
+## move messages to disk much more rapidly.
+##
+## Another alternative is to configure queues to page all messages (both
+## persistent and transient) to disk as quickly
+## as possible, see https://rabbitmq.com/lazy-queues.html.
+##
+# vm_memory_high_watermark_paging_ratio = 0.5
+{% if rabbitmq.config.vm_memory_high_watermark_paging_ratio is defined %}
+vm_memory_high_watermark_paging_ratio = {{ rabbitmq.config.vm_memory_high_watermark_paging_ratio|default('0.5') }}
+{% endif %}
+
+## Selects Erlang VM memory consumption calculation strategy. Can be `allocated`, `rss` or `legacy` (aliased as `erlang`),
+## Introduced in 3.6.11. `rss` is the default as of 3.6.12.
+## See https://github.com/rabbitmq/rabbitmq-server/issues/1223 and rabbitmq/rabbitmq-common#224 for background.
+# vm_memory_calculation_strategy = rss
+{% if rabbitmq.config.vm_memory_calculation_strategy is defined %}
+vm_memory_calculation_strategy = {{ rabbitmq.config.vm_memory_calculation_strategy|default('rss') }}
+{% endif %}
+
+## Interval (in milliseconds) at which we perform the check of the memory
+## levels against the watermarks.
+##
+# memory_monitor_interval = 2500
+{% if rabbitmq.config.memory_monitor_interval is defined %}
+memory_monitor_interval = {{ rabbitmq.config.memory_monitor_interval|default(2500) }}
+{% endif %}
+
+## The total memory available can be calculated from the OS resources
+## - default option - or provided as a configuration parameter.
+# total_memory_available_override_value = 2GB
+{% if rabbitmq.config.total_memory_available_override_value is defined %}
+total_memory_available_override_value = {{ rabbitmq.config.total_memory_available_override_value|default('2GB') }}
+{% endif %}
+
+## Set disk free limit (in bytes). Once free disk space reaches this
+## lower bound, a disk alarm will be set - see the documentation
+## listed above for more details.
+##
+## Absolute watermark will be ignored if relative is defined!
+# disk_free_limit.absolute = 50000
+
+## Or you can set it using memory units (same as in vm_memory_high_watermark)
+## with RabbitMQ 3.6.0+.
+# disk_free_limit.absolute = 500KB
+# disk_free_limit.absolute = 50mb
+# disk_free_limit.absolute = 5GB
+
+{% if rabbitmq.config.disk_free_limit.absolute is defined %}
+disk_free_limit.absolute = {{ rabbitmq.config.disk_free_limit.absolute|default('5GB') }}
+{% endif %}
+
+## Alternatively, we can set a limit relative to total available RAM.
+##
+## Values lower than 1.0 can be dangerous and should be used carefully.
+# disk_free_limit.relative = 2.0
+{% if rabbitmq.config.disk_free_limit.relative is defined %}
+disk_free_limit.relative = {{ rabbitmq.config.disk_free_limit.relative|default('2.0') }}
+{% endif %}
+
+
+##
+## Clustering
+## =====================
+##
+# cluster_partition_handling = ignore
+{% if rabbitmq.config.cluster_partition_handling is defined %}
+cluster_partition_handling = {{ rabbitmq.config.cluster_partition_handling|default('ignore') }}
+{% endif %}
+
+## pause_if_all_down strategy require additional configuration
+# cluster_partition_handling = pause_if_all_down
+{% if rabbitmq.config.cluster_partition_handling.pause_if_all_down is defined %}
+cluster_partition_handling = pause_if_all_down
+{% else if rabbitmq.config.cluster_partition_handling is defined %}
+cluster_partition_handling = {{ rabbitmq.config.cluster_partition_handling }}
+{% endif %}
+
+## Recover strategy. Can be either 'autoheal' or 'ignore'
+# cluster_partition_handling.pause_if_all_down.recover = ignore
+{% if rabbitmq.config.cluster_partition_handling.pause_if_all_down.recover is defined %}
+cluster_partition_handling.pause_if_all_down.recover = {{ rabbitmq.config.cluster_partition_handling.pause_if_all_down.recover|default('ignore') }}
+{% endif %}
+
+## Node names to check
+# cluster_partition_handling.pause_if_all_down.nodes.1 = rabbit@localhost
+# cluster_partition_handling.pause_if_all_down.nodes.2 = hare@localhost
+
+{% if rabbitmq.cluster_partition_handling.pause_if_all_down.nodes is defined %}
+{% for item in rabbitmq.cluster_partition_handling.pause_if_all_down.nodes %}
+cluster_partition_handling.pause_if_all_down.nodes.{{loop.counter}} = {{item}}
+{% endfor %}
+{% endif %}
+
+## Mirror sync batch size, in messages. Increasing this will speed
+## up syncing but total batch size in bytes must not exceed 2 GiB.
+## Available in RabbitMQ 3.6.0 or later.
+##
+# mirroring_sync_batch_size = 4096
+{% if rabbitmq.config.mirroring_sync_batch_size is defined %}
+mirroring_sync_batch_size = {{ rabbitmq.config.mirroring_sync_batch_size|default(4096) }}
+{% endif %}
+
+## Make clustering happen *automatically* at startup. Only applied
+## to nodes that have just been reset or started for the first time.
+##
+## Relevant doc guide: https://rabbitmq.com//cluster-formation.html
+##
+
+# cluster_formation.peer_discovery_backend     = rabbit_peer_discovery_classic_config
+#
+# cluster_formation.classic_config.nodes.1 = rabbit1@hostname
+# cluster_formation.classic_config.nodes.2 = rabbit2@hostname
+# cluster_formation.classic_config.nodes.3 = rabbit3@hostname
+# cluster_formation.classic_config.nodes.4 = rabbit4@hostname
+
+## DNS-based peer discovery. This backend will list A records
+## of the configured hostname and perform reverse lookups for
+## the addresses returned.
+
+# cluster_formation.peer_discovery_backend = rabbit_peer_discovery_dns
+# cluster_formation.dns.hostname = discovery.eng.example.local
+
+{% if rabbitmq.config.cluster_formation is defined %}
+{% if rabbitmq.config.cluster_formation.peer_discovery_backend == 'rabbit_peer_discovery_classic_config' %}
+cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
+{% for item in rabbitmq.config.cluster_formation.classic_config.nodes %}
+cluster_formation.classic_config.nodes.{{loop.index}} = {{item}}
+{% endfor %}
+{% elif rabbitmq.config.cluster_formation.peer_discovery_backend == 'rabbit_peer_discovery_dns' %}
+cluster_formation.peer_discovery_backend = rabbit_peer_discovery_dns
+cluster_formation.dns.hostname = {{ rabbitmq.config.cluster_formation.dns.hostname }}
+{% endif %}
+{% endif %}
+
+## This node's type can be configured. If you are not sure
+## what node type to use, always use 'disc'.
+# cluster_formation.node_type = disc
+{% if rabbitmq.config.cluster_formation.node_type is defined %}
+cluster_formation.node_type = {{ rabbitmq.config.cluster_formation.node_type|default('disc') }}
+{% endif %}
+
+## Interval (in milliseconds) at which we send keepalive messages
+## to other cluster members. Note that this is not the same thing
+## as net_ticktime; missed keepalive messages will not cause nodes
+## to be considered down.
+##
+# cluster_keepalive_interval = 10000
+{% if rabbitmq.config.cluster_keepalive_interval is defined %}
+cluster_keepalive_interval = {{ rabbitmq.config.cluster_keepalive_interval|default(10000) }}
+{% endif %}
+
+
+
+##
+## Statistics Collection
+## =====================
+##
+
+## Set (internal) statistics collection granularity.
+##
+## Can be none, coarse or fine
+# collect_statistics = none
+# collect_statistics = coarse
+{% if rabbitmq.config.collect_statistics is defined %}
+collect_statistics = {{ rabbitmq.config.collect_statistics }}
+{% endif %}
+
+## Statistics collection interval (in milliseconds). Increasing
+## this will reduce the load on management database.
+##
+# collect_statistics_interval = 5000
+{% if rabbitmq.config.collect_statistics_interval is defined %}
+collect_statistics_interval = {{ rabbitmq.config.collect_statistics_interval|default(5000) }}
+{% endif %}
+
+##
+## Ra Settings
+## =====================
+##
+## NB: changing these on a node with existing data directory
+##     can lead to DATA LOSS.
+##
+# raft.segment_max_entries = 65536
+# raft.wal_max_size_bytes = 1048576
+# raft.wal_max_batch_size = 32768
+# raft.snapshot_chunk_size = 1000000
+
+{% if rabbitmq.config.raft is defined %}
+raft.segment_max_entries = {{ rabbitmq.config.raft.segment_max_entries|default(65536) }}
+raft.wal_max_size_bytes  = {{ rabbitmq.config.raft.wal_max_size_bytes|default(1048576) }}
+raft.wal_max_batch_size  = {{ rabbitmq.config.raft.wal_max_batch_size|default(32768) }}
+raft.snapshot_chunk_size = {{ rabbitmq.config.raft.snapshot_chunk_size|default(1000000) }}
+{% endif %}
+
+##
+## Misc/Advanced Options
+## =====================
+##
+## NB: Change these only if you understand what you are doing!
+##
+
+## Explicitly enable/disable hipe compilation. This option is deprecated
+## because HiPE supported has been
+## effectively discontinued in Erlang 22.
+##
+# hipe_compile = false
+{% if rabbitmq.config.hipe_compile is defined %}
+hipe_compile = {{ rabbitmq.config.hipe_compile|default('false') }}
+{% endif %}
+
+## Timeout used when waiting for Mnesia tables in a cluster to
+## become available.
+##
+# mnesia_table_loading_retry_timeout = 30000
+{% if rabbitmq.config.mnesia_table_loading_retry_timeout is defined %}
+mnesia_table_loading_retry_timeout = {{ rabbitmq.config.mnesia_table_loading_retry_timeout|default(30000) }}
+{% endif %}
+
+## Retries when waiting for Mnesia tables in the cluster startup. Note that
+## this setting is not applied to Mnesia upgrades or node deletions.
+##
+# mnesia_table_loading_retry_limit = 10
+{% if rabbitmq.config.mnesia_table_loading_retry_limit is defined %}
+mnesia_table_loading_retry_limit = {{ rabbitmq.config.mnesia_table_loading_retry_limit|default(10) }}
+{% endif %}
+
+## Size in bytes below which to embed messages in the queue index.
+## Related doc guide: https://rabbitmq.com/persistence-conf.html
+##
+# queue_index_embed_msgs_below = 4096
+{% if rabbitmq.config.queue_index_embed_msgs_below is defined %}
+queue_index_embed_msgs_below = {{ rabbitmq.config.queue_index_embed_msgs_below|default(4096) }}
+{% endif %}
+
+## You can also set this size in memory units
+##
+# queue_index_embed_msgs_below = 4kb
+{% if rabbitmq.config.queue_index_embed_msgs_below is defined %}
+queue_index_embed_msgs_below = {{ rabbitmq.config.queue_index_embed_msgs_below|default('4kb') }}
+{% endif %}
+
+## Whether or not to enable background periodic forced GC runs for all
+## Erlang processes on the node in "waiting" state.
+##
+## Disabling background GC may reduce latency for client operations,
+## keeping it enabled may reduce median RAM usage by the binary heap
+## (see https://www.erlang-solutions.com/blog/erlang-garbage-collector.html).
+##
+## Before trying this option, please take a look at the memory
+## breakdown (https://www.rabbitmq.com/memory-use.html).
+##
+# background_gc_enabled = false
+{% if rabbitmq.config.background_gc_enabled is defined %}
+background_gc_enabled = {{ rabbitmq.config.background_gc_enabled|default('true') }}
+{% endif %}
+
+## Target (desired) interval (in milliseconds) at which we run background GC.
+## The actual interval will vary depending on how long it takes to execute
+## the operation (can be higher than this interval). Values less than
+## 30000 milliseconds are not recommended.
+##
+# background_gc_target_interval = 60000
+{% if rabbitmq.config.background_gc_target_interval is defined %}
+background_gc_target_interval = {{ rabbitmq.config.background_gc_target_interval|default('60000') }}
+{% endif %}
+
+## Whether or not to enable proxy protocol support.
+## Once enabled, clients cannot directly connect to the broker
+## anymore. They must connect through a load balancer that sends the
+## proxy protocol header to the broker at connection time.
+## This setting applies only to AMQP clients, other protocols
+## like MQTT or STOMP have their own setting to enable proxy protocol.
+## See the plugins documentation for more information.
+##
+# proxy_protocol = false
+{% if rabbitmq.config.proxy_protocol is defined %}
+proxy_protocol = {{ rabbitmq.config.proxy_protocol|default('false') }}
+{% endif %}
+
+
+
+## ----------------------------------------------------------------------------
+## Advanced Erlang Networking/Clustering Options.
+##
+## Related doc guide: https://rabbitmq.com/clustering.html
+## ----------------------------------------------------------------------------
+
+# ======================================
+# Kernel section
+# ======================================
+
+## Timeout used to detect peer unavailability, including CLI tools.
+## Related doc guide: https://www.rabbitmq.com/nettick.html.
+##
+# net_ticktime = 60
+{% if rabbitmq.config.net_ticktime is defined %}
+net_ticktime = {{ rabbitmq.config.net_ticktime|default(60) }}
+{% endif %}
+
+## Inter-node communication port range.
+## The parameters inet_dist_listen_min and inet_dist_listen_max
+## can be configured in the classic config format only.
+## Related doc guide: https://www.rabbitmq.com/networking.html#epmd-inet-dist-port-range.
+
+
+
+## ----------------------------------------------------------------------------
+## RabbitMQ Management Plugin
+##
+## Related doc guide: https://rabbitmq.com/management.html.
+## ----------------------------------------------------------------------------
+
+# =======================================
+# Management section
+# =======================================
+
+## Preload schema definitions from the following JSON file.
+## Related doc guide: https://rabbitmq.com/management.html#load-definitions.
+##
+# management.load_definitions = /path/to/exported/definitions.json
+{% if rabbitmq.config.management.load_definitions is defined %}
+management.load_definitions = {{ rabbitmq.config.management.load_definitions }}
+{% endif %}
+
+## Log all requests to the management HTTP API to a file.
+##
+# management.http_log_dir = /path/to/access.log
+{% if rabbitmq.config.http_log_dir is defined %}
+management.http_log_dir = {{ rabbitmq.config.http_log_dir }}
+{% endif %}
+
+## HTTP listener and embedded Web server settings.
+# ## See https://rabbitmq.com/management.html for details.
+#
+# management.tcp.port = 15672
+# management.tcp.ip   = 0.0.0.0
+#
+# management.tcp.shutdown_timeout   = 7000
+# management.tcp.max_keepalive      = 120
+# management.tcp.idle_timeout       = 120
+# management.tcp.inactivity_timeout = 120
+# management.tcp.request_timeout    = 120
+# management.tcp.compress           = true
+
+{% if rabbitmq.config.management.tcp.ip is defined %}
+management.tcp.port = 15672
+management.tcp.ip = {{ rabbitmq.config.management.tcp.ip|default('0.0.0.0') }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.shutdown_timeout is defined %}
+management.tcp.shutdown_timeout = {{ rabbitmq.config.management.tcp.shutdown_timeout|default(7000) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.max_keepalive is defined %}
+management.tcp.max_keepalive = {{ rabbitmq.config.management.tcp.max_keepalive|default(120) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.idle_timeout is defined %}
+management.tcp.idle_timeout = {{ rabbitmq.config.management.tcp.idle_timeout|default(120) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.inactivity_timeout is defined %}
+management.tcp.inactivity_timeout = {{ rabbitmq.config.management.tcp.inactivity_timeout|default(120) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.request_timeout is defined %}
+management.tcp.request_timeout = {{ rabbitmq.config.management.tcp.request_timeout|default(120) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.compress is defined %}
+management.tcp.compress = {{ rabbitmq.config.management.tcp.compress|default('true') }}
+{% endif %}
+
+## HTTPS listener settings.
+## See https://rabbitmq.com/management.html and https://rabbitmq.com/ssl.html for details.
+##
+# management.ssl.port       = 15671
+# management.ssl.cacertfile = /path/to/ca_certificate.pem
+# management.ssl.certfile   = /path/to/server_certificate.pem
+# management.ssl.keyfile    = /path/to/server_key.pem
+
+## More TLS options
+# management.ssl.honor_cipher_order   = true
+# management.ssl.honor_ecc_order      = true
+# management.ssl.client_renegotiation = false
+# management.ssl.secure_renegotiate   = true
+
+## Supported TLS versions
+# management.ssl.versions.1 = tlsv1.2
+# management.ssl.versions.2 = tlsv1.1
+
+## Cipher suites the server is allowed to use
+# management.ssl.ciphers.1 = ECDHE-ECDSA-AES256-GCM-SHA384
+# management.ssl.ciphers.2 = ECDHE-RSA-AES256-GCM-SHA384
+# management.ssl.ciphers.3 = ECDHE-ECDSA-AES256-SHA384
+# management.ssl.ciphers.4 = ECDHE-RSA-AES256-SHA384
+# management.ssl.ciphers.5 = ECDH-ECDSA-AES256-GCM-SHA384
+# management.ssl.ciphers.6 = ECDH-RSA-AES256-GCM-SHA384
+# management.ssl.ciphers.7 = ECDH-ECDSA-AES256-SHA384
+# management.ssl.ciphers.8 = ECDH-RSA-AES256-SHA384
+# management.ssl.ciphers.9 = DHE-RSA-AES256-GCM-SHA384
+
+{% if rabbitmq.config.management.ssl.cacertfile is defined %}
+management.ssl.cacertfile = {{ rabbitmq.config.management.ssl.cacertfile|default('/etc/ssl/certs/ca-bundle.crt') }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.certfile is defined %}
+management.ssl.certfile = {{ rabbitmq.config.management.ssl.certfile }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.keyfile is defined %}
+management.ssl.keyfile = {{ rabbitmq.config.management.ssl.keyfile }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.honor_cipher_order is defined %}
+management.ssl.honor_cipher_order = {{ rabbitmq.config.management.ssl.honor_cipher_order|default('true') }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.honor_ecc_order is defined %}
+management.ssl.honor_ecc_order = {{ rabbitmq.config.management.ssl.honor_ecc_order|default('true') }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.client_renegotiation is defined %}
+management.ssl.client_renegotiation = {{ rabbitmq.config.management.ssl.client_renegotiation|default('false') }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.secure_renegotiate is defined %}
+management.ssl.secure_renegotiate = {{ rabbitmq.config.management.ssl.secure_renegotiate|default('true') }}
+{% endif %}
+
+{% for item in rabbitmq.config.management.ssl.ciphers %}
+management.ssl.ciphers.{{loop.index}} = {{item}}
+{% endfor %}
+
+## One of 'basic', 'detailed' or 'none'. See
+## https://rabbitmq.com/management.html#fine-stats for more details.
+# management.rates_mode = basic
+{% if rabbitmq.config.management.rates_mode is defined %}
+management.rates_mode = {{ rabbitmq.config.management.rates_mode|default('basic') }}
+{% endif %}
+
+## Configure how long aggregated data (such as message rates and queue
+## lengths) is retained. Please read the plugin's documentation in
+## https://rabbitmq.com/management.html#configuration for more
+## details.
+## Your can use 'minute', 'hour' and 'day' keys or integer key (in seconds)
+# management.sample_retention_policies.global.minute = 5
+# management.sample_retention_policies.global.hour   = 60
+# management.sample_retention_policies.global.day    = 1200
+# management.sample_retention_policies.basic.minute  = 5
+# management.sample_retention_policies.basic.hour    = 60
+# management.sample_retention_policies.detailed.10   = 5
+
+{% for global_policies in rabbitmq.config.management.sample_retention_policies.global %}
+{% for key, value in global_policies.items() %}
+management.sample_retention_policies.global.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
+{% for basic_policies in rabbitmq.config.management.sample_retention_policies.basic %}
+{% for key, value in basic_policies.items() %}
+management.sample_retention_policies.basic.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
+{% for detailed_policies in rabbitmq.config.management.sample_retention_policies.detailed %}
+{% for key, value in detailed_policies.items() %}
+management.sample_retention_policies.detailed.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
