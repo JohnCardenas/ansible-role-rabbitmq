@@ -126,3 +126,35 @@
     state: disabled
     permanent: true
     immediate: true
+
+- name: Open MQTT WebSockets Port
+  when: "'rabbitmq_web_mqtt' in rabbitmq.plugins and rabbitmq.config.web_mqtt.tcp.ip is defined"
+  firewalld:
+    port: 9001/tcp
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Close MQTT WebSockets Port
+  when: "'rabbitmq_web_mqtt' not in rabbitmq.plugins or rabbitmq.config.web_mqtt.tcp.ip is not defined"
+  firewalld:
+    port: 9001/tcp
+    state: disabled
+    permanent: true
+    immediate: true
+
+- name: Open MQTT WebSockets SSL Port
+  when: "'rabbitmq_web_mqtt' in rabbitmq.plugins and rabbitmq.config.web_mqtt.ssl.certfile is defined"
+  firewalld:
+    port: 9002/tcp
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Close MQTT WebSockets SSL Port
+  when: "'rabbitmq_web_mqtt' not in rabbitmq.plugins or rabbitmq.config.web_mqtt.ssl.certfile is not defined"
+  firewalld:
+    port: 9002/tcp
+    state: disabled
+    permanent: true
+    immediate: true

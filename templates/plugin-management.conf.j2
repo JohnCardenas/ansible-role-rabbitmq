@@ -1,0 +1,157 @@
+## ----------------------------------------------------------------------------
+## RabbitMQ Management Plugin
+##
+## Related doc guide: https://rabbitmq.com/management.html.
+## ----------------------------------------------------------------------------
+
+# =======================================
+# Management section
+# =======================================
+
+## Preload schema definitions from the following JSON file.
+## Related doc guide: https://rabbitmq.com/management.html#load-definitions.
+##
+# management.load_definitions = /path/to/exported/definitions.json
+{% if rabbitmq.config.management.load_definitions is defined %}
+management.load_definitions = {{ rabbitmq.config.management.load_definitions }}
+{% endif %}
+
+## Log all requests to the management HTTP API to a file.
+##
+# management.http_log_dir = /path/to/access.log
+{% if rabbitmq.config.management.http_log_dir is defined %}
+management.http_log_dir = {{ rabbitmq.config.management.http_log_dir }}
+{% endif %}
+
+## HTTP listener and embedded Web server settings.
+# ## See https://rabbitmq.com/management.html for details.
+#
+# management.tcp.port = 15672
+# management.tcp.ip   = 0.0.0.0
+#
+# management.tcp.shutdown_timeout   = 7000
+# management.tcp.max_keepalive      = 120
+# management.tcp.idle_timeout       = 120
+# management.tcp.inactivity_timeout = 120
+# management.tcp.request_timeout    = 120
+# management.tcp.compress           = true
+
+{% if rabbitmq.config.management.tcp.ip is defined %}
+management.tcp.port = 15672
+management.tcp.ip = {{ rabbitmq.config.management.tcp.ip|default('0.0.0.0') }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.shutdown_timeout is defined %}
+management.tcp.shutdown_timeout = {{ rabbitmq.config.management.tcp.shutdown_timeout|default(7000) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.max_keepalive is defined %}
+management.tcp.max_keepalive = {{ rabbitmq.config.management.tcp.max_keepalive|default(120) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.idle_timeout is defined %}
+management.tcp.idle_timeout = {{ rabbitmq.config.management.tcp.idle_timeout|default(120) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.inactivity_timeout is defined %}
+management.tcp.inactivity_timeout = {{ rabbitmq.config.management.tcp.inactivity_timeout|default(120) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.request_timeout is defined %}
+management.tcp.request_timeout = {{ rabbitmq.config.management.tcp.request_timeout|default(120) }}
+{% endif %}
+{% if rabbitmq.config.management.tcp.compress is defined %}
+management.tcp.compress = {{ rabbitmq.config.management.tcp.compress|default('true') }}
+{% endif %}
+
+## HTTPS listener settings.
+## See https://rabbitmq.com/management.html and https://rabbitmq.com/ssl.html for details.
+##
+# management.ssl.port       = 15671
+# management.ssl.cacertfile = /path/to/ca_certificate.pem
+# management.ssl.certfile   = /path/to/server_certificate.pem
+# management.ssl.keyfile    = /path/to/server_key.pem
+
+## More TLS options
+# management.ssl.honor_cipher_order   = true
+# management.ssl.honor_ecc_order      = true
+# management.ssl.client_renegotiation = false
+# management.ssl.secure_renegotiate   = true
+
+## Supported TLS versions
+# management.ssl.versions.1 = tlsv1.2
+# management.ssl.versions.2 = tlsv1.1
+
+## Cipher suites the server is allowed to use
+# management.ssl.ciphers.1 = ECDHE-ECDSA-AES256-GCM-SHA384
+# management.ssl.ciphers.2 = ECDHE-RSA-AES256-GCM-SHA384
+# management.ssl.ciphers.3 = ECDHE-ECDSA-AES256-SHA384
+# management.ssl.ciphers.4 = ECDHE-RSA-AES256-SHA384
+# management.ssl.ciphers.5 = ECDH-ECDSA-AES256-GCM-SHA384
+# management.ssl.ciphers.6 = ECDH-RSA-AES256-GCM-SHA384
+# management.ssl.ciphers.7 = ECDH-ECDSA-AES256-SHA384
+# management.ssl.ciphers.8 = ECDH-RSA-AES256-SHA384
+# management.ssl.ciphers.9 = DHE-RSA-AES256-GCM-SHA384
+
+{% if rabbitmq.config.management.ssl.cacertfile is defined %}
+management.ssl.cacertfile = {{ rabbitmq.config.management.ssl.cacertfile|default('/etc/ssl/certs/ca-bundle.crt') }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.certfile is defined %}
+management.ssl.port = 15671
+management.ssl.certfile = {{ rabbitmq.config.management.ssl.certfile }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.keyfile is defined %}
+management.ssl.keyfile = {{ rabbitmq.config.management.ssl.keyfile }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.honor_cipher_order is defined %}
+management.ssl.honor_cipher_order = {{ rabbitmq.config.management.ssl.honor_cipher_order|default('true') }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.honor_ecc_order is defined %}
+management.ssl.honor_ecc_order = {{ rabbitmq.config.management.ssl.honor_ecc_order|default('true') }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.client_renegotiation is defined %}
+management.ssl.client_renegotiation = {{ rabbitmq.config.management.ssl.client_renegotiation|default('false') }}
+{% endif %}
+{% if rabbitmq.config.management.ssl.secure_renegotiate is defined %}
+management.ssl.secure_renegotiate = {{ rabbitmq.config.management.ssl.secure_renegotiate|default('true') }}
+{% endif %}
+
+{% for item in rabbitmq.config.management.ssl.versions|default([]) %}
+management.ssl.versions.{{loop.index}} = {{item}}
+{% endfor %}
+
+{% for item in rabbitmq.config.management.ssl.ciphers|default([]) %}
+management.ssl.ciphers.{{loop.index}} = {{item}}
+{% endfor %}
+
+## One of 'basic', 'detailed' or 'none'. See
+## https://rabbitmq.com/management.html#fine-stats for more details.
+# management.rates_mode = basic
+{% if rabbitmq.config.management.rates_mode is defined %}
+management.rates_mode = {{ rabbitmq.config.management.rates_mode|default('basic') }}
+{% endif %}
+
+## Configure how long aggregated data (such as message rates and queue
+## lengths) is retained. Please read the plugin's documentation in
+## https://rabbitmq.com/management.html#configuration for more
+## details.
+## Your can use 'minute', 'hour' and 'day' keys or integer key (in seconds)
+# management.sample_retention_policies.global.minute = 5
+# management.sample_retention_policies.global.hour   = 60
+# management.sample_retention_policies.global.day    = 1200
+# management.sample_retention_policies.basic.minute  = 5
+# management.sample_retention_policies.basic.hour    = 60
+# management.sample_retention_policies.detailed.10   = 5
+
+{% for global_policies in rabbitmq.config.management.sample_retention_policies.global|default([]) %}
+{% for key, value in global_policies.items() %}
+management.sample_retention_policies.global.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
+{% for basic_policies in rabbitmq.config.management.sample_retention_policies.basic|default([]) %}
+{% for key, value in basic_policies.items() %}
+management.sample_retention_policies.basic.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
+{% for detailed_policies in rabbitmq.config.management.sample_retention_policies.detailed|default([]) %}
+{% for key, value in detailed_policies.items() %}
+management.sample_retention_policies.detailed.{{key}} = {{value}}
+{% endfor %}
+{% endfor %}
+
+

@@ -1,0 +1,81 @@
+## ----------------------------------------------------------------------------
+## RabbitMQ MQTT WebSockets Adapter
+##
+## See https://www.rabbitmq.com/web-mqtt.html for details
+## ----------------------------------------------------------------------------
+
+# =======================================
+# Listener section
+# =======================================
+
+## HTTP listener and embedded Web server settings.
+# ## See https://www.rabbitmq.com/web-mqtt.html for details.
+#
+# web_mqtt.tcp.port = 9001
+# web_mqtt.tcp.ip   = 0.0.0.0
+#
+
+{% if rabbitmq.config.web_mqtt.tcp.ip is defined %}
+web_mqtt.tcp.port = 9001
+web_mqtt.tcp.ip = {{ rabbitmq.config.web_mqtt.tcp.ip|default('0.0.0.0') }}
+{% endif %}
+
+## HTTPS listener settings.
+## See https://rabbitmq.com/web-mqtt.html and https://rabbitmq.com/ssl.html for details.
+##
+# web_mqtt.ssl.port       = 9002
+# web_mqtt.ssl.cacertfile = /path/to/ca_certificate.pem
+# web_mqtt.ssl.certfile   = /path/to/server_certificate.pem
+# web_mqtt.ssl.keyfile    = /path/to/server_key.pem
+
+## More TLS options
+# web_mqtt.ssl.honor_cipher_order   = true
+# web_mqtt.ssl.honor_ecc_order      = true
+# web_mqtt.ssl.client_renegotiation = false
+# web_mqtt.ssl.secure_renegotiate   = true
+
+## Supported TLS versions
+# web_mqtt.ssl.versions.1 = tlsv1.2
+# web_mqtt.ssl.versions.2 = tlsv1.1
+
+## Cipher suites the server is allowed to use
+# web_mqtt.ssl.ciphers.1 = ECDHE-ECDSA-AES256-GCM-SHA384
+# web_mqtt.ssl.ciphers.2 = ECDHE-RSA-AES256-GCM-SHA384
+# web_mqtt.ssl.ciphers.3 = ECDHE-ECDSA-AES256-SHA384
+# web_mqtt.ssl.ciphers.4 = ECDHE-RSA-AES256-SHA384
+# web_mqtt.ssl.ciphers.5 = ECDH-ECDSA-AES256-GCM-SHA384
+# web_mqtt.ssl.ciphers.6 = ECDH-RSA-AES256-GCM-SHA384
+# web_mqtt.ssl.ciphers.7 = ECDH-ECDSA-AES256-SHA384
+# web_mqtt.ssl.ciphers.8 = ECDH-RSA-AES256-SHA384
+# web_mqtt.ssl.ciphers.9 = DHE-RSA-AES256-GCM-SHA384
+
+{% if rabbitmq.config.web_mqtt.ssl.cacertfile is defined %}
+web_mqtt.ssl.cacertfile = {{ rabbitmq.config.web_mqtt.ssl.cacertfile|default('/etc/ssl/certs/ca-bundle.crt') }}
+{% endif %}
+{% if rabbitmq.config.web_mqtt.ssl.certfile is defined %}
+web_mqtt.ssl.port = 15671
+web_mqtt.ssl.certfile = {{ rabbitmq.config.web_mqtt.ssl.certfile }}
+{% endif %}
+{% if rabbitmq.config.web_mqtt.ssl.keyfile is defined %}
+web_mqtt.ssl.keyfile = {{ rabbitmq.config.web_mqtt.ssl.keyfile }}
+{% endif %}
+{% if rabbitmq.config.web_mqtt.ssl.honor_cipher_order is defined %}
+web_mqtt.ssl.honor_cipher_order = {{ rabbitmq.config.web_mqtt.ssl.honor_cipher_order|default('true') }}
+{% endif %}
+{% if rabbitmq.config.web_mqtt.ssl.honor_ecc_order is defined %}
+web_mqtt.ssl.honor_ecc_order = {{ rabbitmq.config.web_mqtt.ssl.honor_ecc_order|default('true') }}
+{% endif %}
+{% if rabbitmq.config.web_mqtt.ssl.client_renegotiation is defined %}
+web_mqtt.ssl.client_renegotiation = {{ rabbitmq.config.web_mqtt.ssl.client_renegotiation|default('false') }}
+{% endif %}
+{% if rabbitmq.config.web_mqtt.ssl.secure_renegotiate is defined %}
+web_mqtt.ssl.secure_renegotiate = {{ rabbitmq.config.web_mqtt.ssl.secure_renegotiate|default('true') }}
+{% endif %}
+
+{% for item in rabbitmq.config.web_mqtt.ssl.versions|default([]) %}
+web_mqtt.ssl.versions.{{loop.index}} = {{item}}
+{% endfor %}
+
+{% for item in rabbitmq.config.web_mqtt.ssl.ciphers|default([]) %}
+web_mqtt.ssl.ciphers.{{loop.index}} = {{item}}
+{% endfor %}

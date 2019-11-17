@@ -1,0 +1,97 @@
+## ----------------------------------------------------------------------------
+## RabbitMQ AMQP 1.0 Support
+##
+## See https://github.com/rabbitmq/rabbitmq-amqp1.0/blob/stable/README.md.
+## ----------------------------------------------------------------------------
+
+# =======================================
+# AMQP 1.0 section
+# =======================================
+
+
+## Connections that are not authenticated with SASL will connect as this
+## account. See the README for more information.
+##
+## Please note that setting this will allow clients to connect without
+## authenticating!
+##
+# amqp1_0.default_user = guest
+{% if rabbitmq.config.amqp1_0.default_user is defined %}
+amqp1_0.default_user = {{ rabbitmq.config.amqp1_0.default_user|default('guest') }}
+{% endif %}
+
+## Enable protocol strict mode. See the README for more information.
+##
+# amqp1_0.protocol_strict_mode = false
+{% if rabbitmq.config.amqp1_0.protocol_strict_mode is defined %}
+amqp1_0.protocol_strict_mode = {{ rabbitmq.config.amqp1_0.protocol_strict_mode|default('false') }}
+{% endif %}
+
+## Logging settings.
+##
+## See https://rabbitmq.com/logging.html and https://github.com/erlang-lager/lager for details.
+##
+
+## Log directory, taken from the RABBITMQ_LOG_BASE env variable by default.
+##
+# log.dir = /var/log/rabbitmq
+{% if rabbitmq.config.log.dir is defined %}
+log.dir = {{ rabbitmq.config.log.dir|default('/var/log/rabbitmq') }}
+{% endif %}
+
+## Logging to file. Can be false or a filename.
+## Default:
+# log.file = rabbit.log
+
+## To disable logging to a file
+# log.file = false
+
+{% if rabbitmq.config.log.file is defined %}
+log.file = {{ rabbitmq.config.log.file }}
+{% endif %}
+
+## Log level for file logging
+##
+# log.file.level = info
+{% if rabbitmq.config.log.level is defined %}
+log.file.level = {{ rabbitmq.config.log.level|default('info') }}
+{% endif %}
+
+## File rotation config. No rotation by default.
+## DO NOT SET rotation date to ''. Leave the value unset if "" is the desired value
+# log.file.rotation.date = $D0
+# log.file.rotation.size = 0
+{% if rabbitmq.config.log.rotation is defined %}
+log.file.rotation.date = {{ rabbitmq.config.log.rotation.date|default('$D0') }}
+log.file.rotation.size = {{ rabbitmq.config.log.rotation.size|default(0) }}
+{% endif %}
+
+## Logging to console (can be true or false)
+##
+# log.console = false
+{% if rabbitmq.config.log.console is defined %}
+log.console = {{ rabbitmq.config.log.console|default('false') }}
+{% endif %}
+
+## Log level for console logging
+##
+# log.console.level = info
+{% if rabbitmq.config.log.level is defined %}
+log.console.level = {{ rabbitmq.config.log.level|default('info') }}
+{% endif %}
+
+## Logging to the amq.rabbitmq.log exchange (can be true or false)
+##
+# log.exchange = false
+{% if rabbitmq.config.log.exchange is defined %}
+log.exchange = {{ rabbitmq.config.log.exchange|default('false') }}
+{% endif %}
+
+## Log level to use when logging to the amq.rabbitmq.log exchange
+##
+# log.exchange.level = info
+{% if rabbitmq.config.log.level is defined %}
+log.exchange.level = {{ rabbitmq.config.log.level|default('info') }}
+{% endif %}
+
+
