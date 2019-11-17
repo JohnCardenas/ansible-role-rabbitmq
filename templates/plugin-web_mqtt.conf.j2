@@ -79,3 +79,5 @@ web_mqtt.ssl.versions.{{loop.index}} = {{item}}
 {% for item in rabbitmq.config.web_mqtt.ssl.ciphers|default([]) %}
 web_mqtt.ssl.ciphers.{{loop.index}} = {{item}}
 {% endfor %}
+
+
