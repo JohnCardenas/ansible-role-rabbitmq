@@ -786,8 +786,8 @@ management.load_definitions = {{ rabbitmq.config.management.load_definitions }}
 ## Log all requests to the management HTTP API to a file.
 ##
 # management.http_log_dir = /path/to/access.log
-{% if rabbitmq.config.http_log_dir is defined %}
-management.http_log_dir = {{ rabbitmq.config.http_log_dir }}
+{% if rabbitmq.config.management.http_log_dir is defined %}
+management.http_log_dir = {{ rabbitmq.config.management.http_log_dir }}
 {% endif %}
 
 ## HTTP listener and embedded Web server settings.
@@ -877,7 +877,11 @@ management.ssl.client_renegotiation = {{ rabbitmq.config.management.ssl.client_r
 management.ssl.secure_renegotiate = {{ rabbitmq.config.management.ssl.secure_renegotiate|default('true') }}
 {% endif %}
 
-{% for item in rabbitmq.config.management.ssl.ciphers %}
+{% for item in rabbitmq.config.management.ssl.versions|default([]) %}
+management.ssl.versions.{{loop.index}} = {{item}}
+{% endfor %}
+
+{% for item in rabbitmq.config.management.ssl.ciphers|default([]) %}
 management.ssl.ciphers.{{loop.index}} = {{item}}
 {% endfor %}
 
@@ -900,17 +904,17 @@ management.rates_mode = {{ rabbitmq.config.management.rates_mode|default('basic'
 # management.sample_retention_policies.basic.hour    = 60
 # management.sample_retention_policies.detailed.10   = 5
 
-{% for global_policies in rabbitmq.config.management.sample_retention_policies.global %}
+{% for global_policies in rabbitmq.config.management.sample_retention_policies.global|default([]) %}
 {% for key, value in global_policies.items() %}
 management.sample_retention_policies.global.{{key}} = {{value}}
 {% endfor %}
 {% endfor %}
-{% for basic_policies in rabbitmq.config.management.sample_retention_policies.basic %}
+{% for basic_policies in rabbitmq.config.management.sample_retention_policies.basic|default([]) %}
 {% for key, value in basic_policies.items() %}
 management.sample_retention_policies.basic.{{key}} = {{value}}
 {% endfor %}
 {% endfor %}
-{% for detailed_policies in rabbitmq.config.management.sample_retention_policies.detailed %}
+{% for detailed_policies in rabbitmq.config.management.sample_retention_policies.detailed|default([]) %}
 {% for key, value in detailed_policies.items() %}
 management.sample_retention_policies.detailed.{{key}} = {{value}}
 {% endfor %}
