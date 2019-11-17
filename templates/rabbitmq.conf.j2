@@ -1292,3 +1292,165 @@ log.exchange = {{ rabbitmq.config.log.exchange|default('false') }}
 {% if rabbitmq.config.log.level is defined %}
 log.exchange.level = {{ rabbitmq.config.log.level|default('info') }}
 {% endif %}
+
+
+
+## ----------------------------------------------------------------------------
+## RabbitMQ LDAP Plugin
+##
+## Related doc guide: https://rabbitmq.com/ldap.html.
+##
+## ----------------------------------------------------------------------------
+
+# =======================================
+# LDAP section
+# =======================================
+
+##
+## Connecting to the LDAP server(s)
+## ================================
+##
+
+## Specify servers to bind to. You *must* set this in order for the plugin
+## to work properly.
+##
+# auth_ldap.servers.1 = your-server-name-goes-here
+
+## You can define multiple servers
+# auth_ldap.servers.2 = your-other-server
+
+{% for item in rabbitmq.config.auth_ldap.servers|default([]) %}
+auth_ldap.servers.{{loop.index}} = {{item}}
+{% endfor %}
+
+## Connect to the LDAP server using TLS
+##
+# auth_ldap.use_ssl = false
+{% if rabbitmq.config.auth_ldap.use_ssl is defined %}
+auth_ldap.use_ssl = {{ rabbitmq.config.auth_ldap.use_ssl|default('true') }}
+{% endif %}
+
+## Specify the LDAP port to connect to
+##
+# auth_ldap.port = 389
+{% if rabbitmq.config.auth_ldap.use_ssl|default('false') == true %}
+auth_ldap.port = 686
+{% elif rabbitmq.config.auth_ldap.servers is defined %}
+auth_ldap.port = 389
+{% endif %}
+
+## LDAP connection timeout, in milliseconds or 'infinity'
+##
+# auth_ldap.timeout = infinity
+
+## Or number
+# auth_ldap.timeout = 500
+
+{% if rabbitmq.config.auth_ldap.timeout is defined %}
+auth_ldap.timeout = {{ rabbitmq.config.auth_ldap.timeout|default(300) }}
+{% endif %}
+
+## Enable logging of LDAP queries.
+## One of
+##   - false (no logging is performed)
+##   - true (verbose logging of the logic used by the plugin)
+##   - network (as true, but additionally logs LDAP network traffic)
+##
+## Defaults to false.
+##
+# auth_ldap.log = false
+
+## Also can be true or network
+# auth_ldap.log = true
+# auth_ldap.log = network
+
+{% if rabbitmq.config.auth_ldap.log is defined %}
+auth_ldap.log = {{ rabbitmq.config.auth_ldap.log|default('false') }}
+{% endif %}
+
+##
+## Authentication
+## ==============
+##
+
+## Pattern to convert the username given through AMQP to a DN before
+## binding
+##
+# auth_ldap.user_dn_pattern = cn=${username},ou=People,dc=example,dc=com
+{% if rabbitmq.config.auth_ldap.user_dn_pattern is defined %}
+auth_ldap.user_dn_pattern = {{ rabbitmq.config.auth_ldap.user_dn_pattern }}
+{% endif %}
+
+## Alternatively, you can convert a username to a Distinguished
+## Name via an LDAP lookup after binding. See the documentation for
+## full details.
+
+## When converting a username to a dn via a lookup, set these to
+## the name of the attribute that represents the user name, and the
+## base DN for the lookup query.
+##
+# auth_ldap.dn_lookup_attribute = userPrincipalName
+# auth_ldap.dn_lookup_base      = DC=gopivotal,DC=com
+{% if rabbitmq.config.auth_ldap.dn_lookup_attribute is defined %}
+auth_ldap.dn_lookup_attribute = {{ rabbitmq.config.auth_ldap.dn_lookup_attribute|default('userPrincipalName') }}
+{% endif %}
+{% if rabbitmq.config.auth_ldap.dn_lookup_base is defined %}
+auth_ldap.dn_lookup_base = {{ rabbitmq.config.auth_ldap.dn_lookup_base }}
+{% endif %}
+
+## Controls how to bind for authorisation queries and also to
+## retrieve the details of users logging in without presenting a
+## password (e.g., SASL EXTERNAL).
+## One of
+##  - as_user (to bind as the authenticated user - requires a password)
+##  - anon    (to bind anonymously)
+##  - {UserDN, Password} (to bind with a specified user name and password)
+##
+## Defaults to 'as_user'.
+##
+# auth_ldap.other_bind = as_user
+
+## Or can be more complex:
+# auth_ldap.other_bind.user_dn  = User
+# auth_ldap.other_bind.password = Password
+
+## If user_dn and password defined - other options is ignored.
+
+{% if rabbitmq.config.auth_ldap.other_bind.user_dn is defined %}
+auth_ldap.other_bind.user_dn = {{ rabbitmq.config.auth_ldap.other_bind.user_dn }}
+auth_ldap.other_bind.password = {{ rabbitmq.config.auth_ldap.other_bind.password }}
+{% elif rabbitmq.config.auth_ldap.other_bind is defined %}
+auth_ldap.other_bind = {{ rabbitmq.config.auth_ldap.other_bind }}
+{% endif %}
+
+# -----------------------------
+# Too complex section of LDAP
+# -----------------------------
+
+##
+## Authorisation
+## =============
+##
+
+## The LDAP plugin can perform a variety of queries against your
+## LDAP server to determine questions of authorisation.
+##
+## Related doc guide: https://rabbitmq.com/ldap.html#authorisation.
+
+## Following configuration should be defined in advanced.config file
+## DO NOT UNCOMMENT THESE LINES!
+
+## Set the query to use when determining vhost access
+##
+## {vhost_access_query, {in_group,
+##                       "ou=${vhost}-users,ou=vhosts,dc=example,dc=com"}},
+
+## Set the query to use when determining resource (e.g., queue) access
+##
+## {resource_access_query, {constant, true}},
+
+## Set queries to determine which tags a user has
+##
+## {tag_queries, []}
+#   ]},
+# -----------------------------
